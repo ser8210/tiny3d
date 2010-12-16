@@ -215,7 +215,7 @@ void LoadTexture()
 
         texture1.bmp_out= texture_pointer;
 
-        texture_pointer += (texture1.wpitch * texture1.height + 3) & ~3; // aligned to 16 bytes (it is u32) and update the pointer
+        texture_pointer += (texture1.wpitch/4 * texture1.height + 3) & ~3; // aligned to 16 bytes (it is u32) and update the pointer
 
         texture1_offset = tiny3d_TextureOffset(texture1.bmp_out);      // get the offset (RSX use offset instead address)
      }
@@ -230,7 +230,7 @@ void LoadTexture()
 
         texture2.bmp_out= texture_pointer;
 
-        texture_pointer += (texture2.wpitch * texture2.height + 3) & ~3; // aligned to 16 bytes (it is u32) and update the pointer
+        texture_pointer += (texture2.wpitch/4 * texture2.height + 3) & ~3; // aligned to 16 bytes (it is u32) and update the pointer
 
         texture2_offset = tiny3d_TextureOffset(texture2.bmp_out);      // get the offset (RSX use offset instead address)
      }
