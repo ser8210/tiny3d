@@ -14,11 +14,15 @@ Credits
     Hermes         - Author
     ElSemi         - Vertex Program Compiler and other useful sample code
     HACKERCHANNEL  - PSL1GHT
+    Oopo           - ps3libraries
 
 License
 -------
     
     It use the same PSL1GHT license (it have one? XD)
+    
+    Some samples can use LPGL, GPL, OFL or maybe others licenses depending of the libraries 
+    or datas used. 
 
 Environment
 -----------
@@ -28,6 +32,11 @@ Environment
     tiny3d.h    -> 2D/3D functions
 
     matrix.h    -> Math support for matrix
+
+    --------------------------------------
+
+    libfont.a   -> library to work with fixed fonts (now allow capture from True Type Fonts)
+    libfont.h   
 
 
 Building
@@ -51,4 +60,9 @@ Current Status
 
 Added libfont.a with support for fonts based in bitmaps arrays of characters
 
-It works with four samples: spheres3D, sprites2D, surfaces and fonts
+It works with five samples: spheres3D, sprites2D, surfaces, fonts and fonts_from_ttf
+
+NOTE: fonts_from_ttf requires Oopo ps3libraries libz and freetype. You can download
+
+from here: http://mods.elotrolado.net/~hermes/ps3/ps3dev/ppu_oopo-ps3libraries.rar
+

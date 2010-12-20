@@ -187,12 +187,12 @@ void drawScene()
     SetCurrentFont(1);
     SetFontColor(0xffffffff, 0xa000006f);
 
-    SetFontAutocenter(1);
+    SetFontAutoCenter(1);
     DrawFormatString(0, 16,    "This is one sample using two surfaces");
     DrawFormatString(0, 16+32, "Green Grid is 320 x 200 32 bits surface A8R8G8B8");
 
     DrawFormatString(0, 16+64, "Yellow Grid is 8 x 8 16 bits surface A1R5G5B5");
-    SetFontAutocenter(0);
+    SetFontAutoCenter(0);
 
 }
 

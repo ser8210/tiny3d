@@ -31,6 +31,19 @@ RSX texture.
 
 u8 * AddFontFromBitmapArray(u8 *font, u8 *texture, u8 first_char, u8 last_char, int w, int h, int bits_per_pixel, int byte_order);
 
+/* 
+add one bitmap font creating it from True Type Fonts. You can define the font range with first_char and last_char in the range 0 to 255
+w and h must be 8, 16, 32, .....
+
+The callback is used to create the font externally (it don't need to use freetype library directly)
+
+It receive one RSX texture pointer and return the texture pointer increased and aligned to 16 bytes think to use this pointer to build the next
+RSX texture.
+*/
+
+u8 * AddFontFromTTF(u8 *texture, u8 first_char, u8 last_char, int w, int h, 
+    void (* ttf_callback) (u8 chr, u8 * bitmap, short *w, short *h, short *y_correction));
+
 /* function to select the current font to use (the first is 0. if you select an undefined font, it uses font 0) */
 
 void SetCurrentFont(int nfont);
@@ -45,11 +58,26 @@ void SetFontColor(u32 color, u32 bkcolor);
 
 // enable/disable the autocenter feature. don't use '\n' or unsupported characters here
 
-void SetFontAutocenter(int on_off);
+void SetFontAutoCenter(int on_off);
+
+// compatibility with old name
+#define SetFontAutocenter SetFontAutoCenter
+
+// enable the auto new line if width is different to 0. When one word exceed the width specified, it skip to the next line
+
+void SetFontAutoNewLine(int width);
 
 // Z used to draw the font. Usually is 0.0f
 
 void SetFontZ(float z);
+
+// last X used
+
+float GetFontX();
+
+// last Y used
+
+float GetFontY();
 
 // function to draw one character
 

@@ -87,14 +87,14 @@ void drawScene()
     SetCurrentFont(1);
     SetFontSize(32, 64);
     SetFontColor(0xffffffff, 0x000000ff);
-    SetFontAutocenter(1);
+    SetFontAutoCenter(1);
     DrawString(0, y, "You can resize letters");
-    SetFontAutocenter(0);
+    SetFontAutoCenter(0);
 
     SetFontSize(12, 24);
     SetFontColor(0xffffffff, 0x00000000);
     y += 72;
-    DrawString(0, y, "change the color, background color and center the text\nwith SetFontAutocenter()");
+    DrawString(0, y, "change the color, background color and center the text\nwith SetFontAutoCenter()");
     y += 72;
 
     SetFontColor(0x00ff00ff, 0x00000000);
