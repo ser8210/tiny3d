@@ -60,9 +60,10 @@ Current Status
 
 Added libfont.a with support for fonts based in bitmaps arrays of characters
 
-It works with five samples: spheres3D, sprites2D, surfaces, fonts and fonts_from_ttf
+It works with six samples: spheres3D, sprites2D, surfaces, fonts, fonts_from_ttf
+and now ps3loadx
 
-NOTE: fonts_from_ttf requires Oopo ps3libraries libz and freetype. You can download
+NOTE: fonts_from_ttf requires Oopo ps3libraries libz and freetype. ps3loadx requires libz and libzip.
 
-from here: http://mods.elotrolado.net/~hermes/ps3/ps3dev/ppu_oopo-ps3libraries.rar
+You can download from here: http://mods.elotrolado.net/~hermes/ps3/ps3dev/ppu_oopo-ps3libraries.rar
 

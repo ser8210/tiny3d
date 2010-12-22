@@ -2,6 +2,7 @@
 .PHONY: all pkg clean
 
 FTINCLUDE	:= $(PS3DEV)/ppu/include/freetype/freetype.h
+ZIPINCLUDE	:= $(PS3DEV)/ppu/include/zip.h
 
 all:
 	
@@ -10,6 +11,7 @@ all:
 	$(MAKE) -C fonts
 	$(MAKE) -C surfaces
 	@if test -e $(FTINCLUDE); then $(MAKE) -C fonts_from_ttf; fi
+	@if test -e $(ZIPINCLUDE); then $(MAKE) -C ps3loadx; fi
 
 pkg:
 	$(MAKE) pkg -C spheres3D
@@ -17,6 +19,7 @@ pkg:
 	$(MAKE) pkg -C fonts
 	$(MAKE) pkg -C surfaces
 	@if test -e $(FTINCLUDE); then $(MAKE) pkg -C fonts_from_ttf; fi
+	@if test -e $(ZIPINCLUDE); then $(MAKE) pkg -C ps3loadx; fi
 
 clean:
 	$(MAKE) clean -C spheres3D
@@ -24,5 +27,6 @@ clean:
 	$(MAKE) clean -C fonts
 	$(MAKE) clean -C surfaces
 	@if test -e $(FTINCLUDE); then $(MAKE) clean -C fonts_from_ttf; fi
+	@if test -e $(ZIPINCLUDE); then $(MAKE) clean -C ps3loadx; fi
 
 
