@@ -7,6 +7,9 @@
 
 #include <lv2/process.h>
 #include <psl1ght/lv2/filesystem.h>
+#include <sys/stat.h>
+
+
 #include <psl1ght/lv2/thread.h>
 #include <sysmodule/sysmodule.h>
 
@@ -847,6 +850,9 @@ int main(int argc, const char* argv[], const char* envp[])
             n= 15; while(ps3load_path[n] != '/' && ps3load_path[n] != 0) n++;
 
             if(ps3load_path[n] == '/') {
+                sprintf(&ps3load_path[n], "%s", "/REBOOT.SELF");
+                lv2FsChmod(ps3load_path, 0170777ULL);
+
                 sprintf(&ps3load_path[n], "%s", "/homebrew");
                 v_release = 1;
             }
