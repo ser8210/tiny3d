@@ -850,7 +850,7 @@ int main(int argc, const char* argv[], const char* envp[])
             n= 15; while(ps3load_path[n] != '/' && ps3load_path[n] != 0) n++;
 
             if(ps3load_path[n] == '/') {
-                sprintf(&ps3load_path[n], "%s", "/REBOOT.SELF");
+                sprintf(&ps3load_path[n], "%s", "/RELOAD.SELF");
                 lv2FsChmod(ps3load_path, 0170777ULL);
 
                 sprintf(&ps3load_path[n], "%s", "/homebrew");
