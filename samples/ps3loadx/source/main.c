@@ -46,7 +46,7 @@ void release_all();
 
 #define DT_DIR 1
 
-#define VERSION "v1.0"
+#define VERSION "v1.1"
 #define PORT 4299
 #define MAX_ARG_COUNT 0x100
 
@@ -220,7 +220,7 @@ static void control_thread(u64 arg)
             menu_level = 2; yesno = 0;
 		}
 
-        if((new_pad & BUTTON_SQUARE) && !menu_level){
+        if((new_pad & BUTTON_SQUARE) && !menu_level  && ndirectories>0){
 			
             menu_level = 3; yesno = 0;	
 		}
