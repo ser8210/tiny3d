@@ -177,8 +177,11 @@ typedef enum
 /*---------------------------------------------------------------------------------------------------------------------------------------------*/
 
 // initialize video and 3D environmment. vertex_buff_size is the size (in bytes) for the buffer that allocates the vertex datas of the polygons
+// by default tiny3d_Init() uses Z32 as buffer but you can uses Z16 with tiny3d_Init(TINY3D_Z16 | vertex_buff_size)
 
-int tiny3d_Init(int vertex_buff_size);
+#define TINY3D_Z16 0x40000000
+
+int tiny3d_Init(u32 vertex_buff_size);
 
 /*---------------------------------------------------------------------------------------------------------------------------------------------*/
 /* CLEAR                                                                                                                                       */
@@ -187,6 +190,14 @@ int tiny3d_Init(int vertex_buff_size);
 // clear the buffers. Usually call it with tiny3d_Clear(color, TINY3D_CLEAR_ALL)
 
 void tiny3d_Clear(u32 color, clear_flags flags);
+
+// clear the buffers. Usually call it with tiny3d_Clear2(color, TINY3D_CLEAR_ALL, ...
+// it is used to render in one alternative surface (texture)
+
+#define CLEARSURFACE_A1R5G5B5 0
+#define CLEARSURFACE_A8R8G8B8 1
+
+void tiny3d_ClearSurface(u32 color, clear_flags flags, u32 rsx_offset, u32 width, u32 height, u32 stride, u32 format);
 
 /*---------------------------------------------------------------------------------------------------------------------------------------------*/
 /* CHANGE TO 2D/3D                                                                                                                             */
@@ -206,26 +217,62 @@ void tiny3d_Project3D();
 void tiny3d_Flip();
 
 /*---------------------------------------------------------------------------------------------------------------------------------------------*/
+/* CALLBACK                                                                                                                                    */
+/*---------------------------------------------------------------------------------------------------------------------------------------------*/
+
+// return 0 or 1 if one menu is active (pressing PS in the pad, for example)
+
+int tiny3d_MenuActive();
+
+/*---------------------------------------------------------------------------------------------------------------------------------------------*/
 /* TEXTURES                                                                                                                                    */
 /*---------------------------------------------------------------------------------------------------------------------------------------------*/
 
 // used to alloc RSX memory for the textures. The best idea is allocate a big area to work with textures, because you cannot deallocate the memory used
+
 void * tiny3d_AllocTexture(u32 size);
 
 // RSX use the offset to work with textures. This function return the texture offset from the pointer to the RSX memory allocated
+
 u32 tiny3d_TextureOffset(void * text);
 
-// set texture to draw
+#define TEXTURE_NEAREST 0
+#define TEXTURE_LINEAR  1
+
+// set texture to draw (TEXTWRAP_REPEAT mode)
+
 void tiny3d_SetTexture(u32 unit, u32 offset, u32 width, u32 height, u32 stride, text_format fmt, int smooth);
+
+#define TEXTWRAP_REPEAT 0
+#define TEXTWRAP_CLAMP  1
+#define TEXTWRAP_MIRROR 2
+
+// set texture to draw with wrap options
+
+void tiny3d_SetTextureWrap(u32 unit, u32 offset, u32 width, u32 height, u32 stride, text_format fmt, int wrap_u, int wrap_v, int smooth);
+
+/*---------------------------------------------------------------------------------------------------------------------------------------------*/
+/* SHADERS CONTROL FOR MULTI-TEXTURES                                                                                                          */
+/*---------------------------------------------------------------------------------------------------------------------------------------------*/
+
+#define MT_MULT_METHOD   0
+#define MT_MADD_A_METHOD 1
+#define MT_MADD_B_METHOD 2
+
+// set method for merge multiple textures (it change the pixel shader)
+
+void tiny3d_SelMultiTexturesMethod(u32 method);
 
 /*---------------------------------------------------------------------------------------------------------------------------------------------*/
 /* ALPHA / BLEND                                                                                                                               */
 /*---------------------------------------------------------------------------------------------------------------------------------------------*/
 
 // enable/disable the alpha test
+
 void tiny3d_AlphaTest(int enable, u8 ref, alpha_func func);
 
 // enable/disable the blend function
+
 void tiny3d_BlendFunc( int enable, blend_src_func src_fun, blend_dst_func dst_func, blend_func func);
 
 /*---------------------------------------------------------------------------------------------------------------------------------------------*/
@@ -237,6 +284,7 @@ void tiny3d_BlendFunc( int enable, blend_src_func src_fun, blend_dst_func dst_fu
 void tiny3d_SetProjectionMatrix(MATRIX *mat);
 
 // set Model/View matrix: Call before tiny3d_SetPolygon()
+
 void tiny3d_SetMatrixModelView(MATRIX *mat);
 
 /*---------------------------------------------------------------------------------------------------------------------------------------------*/
@@ -244,22 +292,86 @@ void tiny3d_SetMatrixModelView(MATRIX *mat);
 /*---------------------------------------------------------------------------------------------------------------------------------------------*/
 
 // set the polygon to draw. It must be called before to call tiny3d_Vertex* functions
+
 int tiny3d_SetPolygon(type_polygon type);
 
 // close the list of vertex, update shader and world matrix and write polygons
+
 int tiny3d_End();
 
-
 // position: it must be the first vertex function to call
+
 void tiny3d_VertexPos(float x, float y, float z);
 void tiny3d_VertexPos4(float x, float y, float z, float w);
 
-//color: fix color method
+// color: fix color method
+
 void tiny3d_VertexColor(u32 rgba);
 void tiny3d_VertexFcolor(float r, float g, float b, float a);
 
 // texture: texture coords
+
 void tiny3d_VertexTexture(float u, float v);
+
+// texture: texture coords2
+
+void tiny3d_VertexTexture2(float u, float v);
+
+// normal: normal coords 
+
+void tiny3d_Normal(float x, float y, float z);
+
+/*---------------------------------------------------------------------------------------------------------------------------------------------*/
+/* LIGHTS & MATERIALS                                                                                                                          */
+/*---------------------------------------------------------------------------------------------------------------------------------------------*/
+
+// ambiental light multiplier
+
+void tiny3d_SetAmbientLight(float r, float g, float b);
+
+// camera position reference for position lights
+
+void tiny3d_SetLightCameraPosition(float x, float y, float z);
+
+// set positional light
+// indx: 0 to 3 (4 lights supported)
+// x,y,z: space position
+// r,g,b: color components (0.0f to 1.0f)
+// mode: 1 -> light diffuse, 2 -> light specular, 0-> light disable
+
+#define LIGHT_DISABLED 0
+#define LIGHT_DIFFUSE  1
+#define LIGHT_SPECULAR 2
+
+void tiny3d_SetLight(int indx, float x, float y, float z, float r, float g, float b, int mode);
+
+// disable all lights
+void tiny3d_SetLightsOff();
+
+// EmissiveMaterial:
+// r,g,b: color components (0.0f to 1.0f)
+// a: Unused
+
+void tiny3d_EmissiveMaterial(float r, float g, float b, float a);
+
+// AmbientMaterial:
+// r,g,b: color components (0.0f to 1.0f)
+// a: Alpha component. Translucency control (0.0f to 1.0f)
+
+void tiny3d_AmbientMaterial (float r, float g, float b, float a);
+
+// DiffuseMaterial:
+// r,g,b: color components (0.0f to 1.0f)
+// a: 0.0 -> disable, other value -> enable
+
+void tiny3d_DiffuseMaterial (float r, float g, float b, float a);
+
+// SpecularMaterial:
+// r,g,b: color components (0.0f to 1.0f)
+// shininess: 0.0 -> disable specular, other value -> shininess
+
+void tiny3d_SpecularMaterial(float r, float g, float b, float shininess);
+
 
 /*---------------------------------------------------------------------------------------------------------------------------------------------*/
 /* VIDEO                                                                                                                                       */

@@ -29,24 +29,33 @@ CXXFILES	:= $(foreach dir,$(SOURCE),$(notdir $(wildcard $(dir)/*.cpp)))
 SFILES		:= $(foreach dir,$(SOURCE),$(notdir $(wildcard $(dir)/*.S)))
 BINFILES	:= $(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.bin)))
 VCGFILES	:= $(foreach dir,$(SOURCE),$(notdir $(wildcard $(dir)/*.vcg)))
+VSAFILES	:= $(foreach dir,$(SOURCE),$(notdir $(wildcard $(dir)/*.vsa)))
+
 
 export OFILES	:=	$(CFILES:.c=.o) \
 					$(CXXFILES:.cpp=.o) \
 					$(SFILES:.S=.o) \
 					$(BINFILES:.bin=.bin.o) \
-					$(VCGFILES:.vcg=.vcg.o)
+					$(VCGFILES:.vcg=.vcg.o) \
+					$(VSAFILES:.vsa=.vsa.o)
 
 export BINFILES	:=	$(BINFILES:.bin=.bin.h)
 export VCGFILES	:=	$(VCGFILES:.vcg=.vcg.h)
+export VSAFILES	:=	$(VSAFILES:.vsa=.vsa.h)
 
 export INCLUDES	=	$(foreach dir,$(INCLUDE),-I$(CURDIR)/$(dir)) \
 					-I$(CURDIR)/$(BUILD) -I$(PSL1GHT)/include
 
-.PHONY: $(BUILD) install clean
+.PHONY: $(BUILD) install clean shader
 
 $(BUILD):
 	@[ -d $@ ] || mkdir -p $@
 	@make --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
+
+shader:
+	@echo "[VPCOMP] $(notdir $<)"
+	@$(VPCOMP) shader/vshader_text_normal.vcg shader/vshader_text_normal.rvp
+	@$(RAW2H)  shader/vshader_text_normal.rvp source/vshader_text_normal.vcg.h source/vshader_text_normal.vcg.S vshader_text_normal_bin
 
 install: $(BUILD)
 	@echo Copying...
@@ -63,7 +72,7 @@ else
 DEPENDS	:= $(OFILES:.o=.d)
 
 $(OUTPUT).a: $(OFILES)
-$(OFILES): $(BINFILES) $(VCGFILES)
+$(OFILES): $(BINFILES) $(VCGFILES) $(VSAFILES)
 
 -include $(DEPENDS)
 
