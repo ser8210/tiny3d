@@ -6,7 +6,7 @@ Tiny3D is one library to work with 2D/3D graphics.
 It uses PSL1GHT and install the libraries in PSL1GHT/lib, C Header files
 in PSL1GHT/include
 
-see the 'docs' folder to know more (i need to update the info to the 2.0)
+see the 'docs' folder to know more (i need to update the info to the 2.0 version)
 
 Credits
 -------
