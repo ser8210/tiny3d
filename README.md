@@ -1,12 +1,12 @@
-Tiny3D
-======
+Tiny3D 2.0
+==========
 
 Tiny3D is one library to work with 2D/3D graphics.
 
 It uses PSL1GHT and install the libraries in PSL1GHT/lib, C Header files
 in PSL1GHT/include
 
-see the 'docs' folder to know more
+see the 'docs' folder to know more (i need to update the info to the 2.0)
 
 Credits
 -------
@@ -58,10 +58,18 @@ Remember you can descend later to the samples folder to compile ONLY the samples
 Current Status
 --------------
 
+Support lights (4 positional specular / diffuse lights + ambient) and materials.
+
+Support double textures and dedicated surface rendering (You can render in the scene in one texture).
+
+It uses a configurable vertex shader and 9 pixel shaders to work
+
 Added libfont.a with support for fonts based in bitmaps arrays of characters
 
 It works with six samples: spheres3D, sprites2D, surfaces, fonts, fonts_from_ttf
 and now ps3loadx
+
+spheres3D uses the advanced features of Tiny3D 2.0
 
 NOTE: fonts_from_ttf requires Oopo ps3libraries libz and freetype. ps3loadx requires libz and libzip.
 
