@@ -13,25 +13,18 @@
 
 #define FLOAT(x) ((float) (x))
 
-#define LIGHT(X,Y,Z) \
+#define NORMALIZE(X,Y,Z) \
         l=sqrtf(X*X + Y*Y + Z*Z); \
         \
         if(l == 0.0f) l = 1.0f; \
         \
-        nx= X / l; ny= Y / l; nz = Z / l; \
-        \
-        l = (nx + ny + nz); \
-        if(l < 0.5f) l = 0.5f;\
-        \
-        nx = r * l; ny = g * l; nz = b * l;
+        nx= X / l; ny= Y / l; nz = Z / l;
 
-void CreateSphere(float rx, float dy, int sx, int sy, float r, float g, float b, float a)
+void CreateSphere(float rx, float ry, int sx, int sy, float r, float g, float b, float a)
 {
     int n, m, k;
     float x, y, z;
     float x2, y2, z2;
-
-    float nx, ny, nz, l;
 
     for(n = 0; n < sy; n++) {
 
@@ -49,18 +42,18 @@ void CreateSphere(float rx, float dy, int sx, int sy, float r, float g, float b,
             x2 *= sinf(S_PI * FLOAT(n + 1) / FLOAT(sy));
             z2 *= sinf(S_PI * FLOAT(n + 1) / FLOAT(sy));
 
-            y   = dy * cosf(S_PI * FLOAT(n) / FLOAT(sy));
-            y2  = dy * cosf(S_PI * FLOAT(n + 1) / FLOAT(sy));
+            y   = ry * cosf(S_PI * FLOAT(n) / FLOAT(sy));
+            y2  = ry * cosf(S_PI * FLOAT(n + 1) / FLOAT(sy));
 
-            LIGHT(x, y, z);
+           
             
             tiny3d_VertexPos(x, y, z);
-            tiny3d_VertexFcolor(nx, ny, nz, a);
+            tiny3d_VertexFcolor(r, g, b, a);
 
-            LIGHT(x2, y2, z2);
 
             tiny3d_VertexPos(x2, y2, z2);
-            tiny3d_VertexFcolor(nx, ny, nz, a);
+            tiny3d_VertexFcolor(r, g, b, a);
+            
              
         }
         
@@ -69,7 +62,8 @@ void CreateSphere(float rx, float dy, int sx, int sy, float r, float g, float b,
     }
 }
 
-void CreateSphereTextured(float rx, float dy, int sx, int sy, float r, float g, float b, float a)
+
+void CreateSphereNormal(float rx, float ry, int sx, int sy)
 {
     int n, m, k;
     float x, y, z;
@@ -93,20 +87,64 @@ void CreateSphereTextured(float rx, float dy, int sx, int sy, float r, float g, 
             x2 *= sinf(S_PI * FLOAT(n + 1) / FLOAT(sy));
             z2 *= sinf(S_PI * FLOAT(n + 1) / FLOAT(sy));
 
-            y   = dy * cosf(S_PI * FLOAT(n) / FLOAT(sy));
-            y2  = dy * cosf(S_PI * FLOAT(n + 1) / FLOAT(sy));
+            y   = ry * cosf(S_PI * FLOAT(n) / FLOAT(sy));
+            y2  = ry * cosf(S_PI * FLOAT(n + 1) / FLOAT(sy));
 
-            LIGHT(x, y, z);
+            NORMALIZE(x, y, z);
+            
+            tiny3d_VertexPos(x, y, z);
+            tiny3d_Normal(nx, ny, nz);
+
+            NORMALIZE(x2, y2, z2);
+
+            tiny3d_VertexPos(x2, y2, z2);
+            tiny3d_Normal(nx, ny, nz);
+             
+        }
+        
+    tiny3d_End();
+
+    }
+}
+
+void CreateSphereNormalTextured(float rx, float ry, int sx, int sy)
+{
+    int n, m, k;
+    float x, y, z;
+    float x2, y2, z2;
+
+    float nx, ny, nz, l;
+
+    for(n = 0; n < sy; n++) {
+
+    tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+
+        for(k = 0;k <= sx; k++) {
+            
+            m = k % sx;
+
+            x = x2 = rx * cosf(D_PI * FLOAT(m) / FLOAT(sx));
+            z=  z2 = rx * sinf(D_PI * FLOAT(m) / FLOAT(sx));
+
+            x  *= sinf(S_PI * FLOAT(n) / FLOAT(sy));
+            z  *= sinf(S_PI * FLOAT(n) / FLOAT(sy));
+            x2 *= sinf(S_PI * FLOAT(n + 1) / FLOAT(sy));
+            z2 *= sinf(S_PI * FLOAT(n + 1) / FLOAT(sy));
+
+            y   = ry * cosf(S_PI * FLOAT(n) / FLOAT(sy));
+            y2  = ry * cosf(S_PI * FLOAT(n + 1) / FLOAT(sy));
+
+            NORMALIZE(x, y, z);
             
             tiny3d_VertexPos(x, y, z);
             tiny3d_VertexTexture((float) k / sx, (float) (n) / sy);
-            tiny3d_VertexFcolor(nx, ny, nz, a);
+            tiny3d_Normal(nx, ny, nz);
 
-            LIGHT(x2, y2, z2);
+            NORMALIZE(x2, y2, z2);
 
             tiny3d_VertexPos(x2, y2, z2);
             tiny3d_VertexTexture((float) k / sx, (float) (n + 1) / sy);
-            tiny3d_VertexFcolor(nx, ny, nz, a);
+            tiny3d_Normal(nx, ny, nz);
              
         }
         
@@ -115,7 +153,55 @@ void CreateSphereTextured(float rx, float dy, int sx, int sy, float r, float g, 
     }
 }
 
-void CreateSphereLine(float rx, float ry, int sx, int sy, float r, float g, float b, float a)
+void CreateSphereNormalTextured2(float rx, float ry, int sx, int sy)
+{
+    int n, m, k;
+    float x, y, z;
+    float x2, y2, z2;
+
+    float nx, ny, nz, l;
+
+    for(n = 0; n < sy; n++) {
+
+    tiny3d_SetPolygon(TINY3D_QUAD_STRIP);
+
+        for(k = 0;k <= sx; k++) {
+            
+            m = k % sx;
+
+            x = x2 = rx * cosf(D_PI * FLOAT(m) / FLOAT(sx));
+            z=  z2 = rx * sinf(D_PI * FLOAT(m) / FLOAT(sx));
+
+            x  *= sinf(S_PI * FLOAT(n) / FLOAT(sy));
+            z  *= sinf(S_PI * FLOAT(n) / FLOAT(sy));
+            x2 *= sinf(S_PI * FLOAT(n + 1) / FLOAT(sy));
+            z2 *= sinf(S_PI * FLOAT(n + 1) / FLOAT(sy));
+
+            y   = ry * cosf(S_PI * FLOAT(n) / FLOAT(sy));
+            y2  = ry * cosf(S_PI * FLOAT(n + 1) / FLOAT(sy));
+
+            NORMALIZE(x, y, z);
+            
+            tiny3d_VertexPos(x, y, z);
+            tiny3d_VertexTexture((float) k / sx, (float) (n) / sy);
+            tiny3d_VertexTexture2((float) k / sx, (float) (n) / sy);
+            tiny3d_Normal(nx, ny, nz);
+
+            NORMALIZE(x2, y2, z2);
+
+            tiny3d_VertexPos(x2, y2, z2);
+            tiny3d_VertexTexture((float) k / sx, (float) (n + 1) / sy);
+            tiny3d_VertexTexture2((float) k / sx, (float) (n + 1) / sy);
+            tiny3d_Normal(nx, ny, nz);
+             
+        }
+        
+    tiny3d_End();
+
+    }
+}
+
+void CreateSphereLine(float rx, float ry, int sx, int sy)
 {
     int n, m, k;
     float x, y, z;
@@ -141,15 +227,15 @@ void CreateSphereLine(float rx, float ry, int sx, int sy, float r, float g, floa
             y   = ry * cosf(S_PI * FLOAT(n) / FLOAT(sy));
             y2  = ry * cosf(S_PI * FLOAT(n + 1) / FLOAT(sy));
 
-            LIGHT(x, y, z);
+            NORMALIZE(x, y, z);
             
             tiny3d_VertexPos(x, y, z);
-            tiny3d_VertexFcolor(nx, ny, nz, a);
+            tiny3d_Normal(nx, ny, nz);
 
-            LIGHT(x2, y2, z2);
+            NORMALIZE(x2, y2, z2);
 
             tiny3d_VertexPos(x2, y2, z2);
-            tiny3d_VertexFcolor(nx, ny, nz, a);
+            tiny3d_Normal(nx, ny, nz);
              
        }
 

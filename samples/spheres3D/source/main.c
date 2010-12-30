@@ -21,6 +21,13 @@
 #include "texture1_png.bin.h"
 #include "texture2_png.bin.h"
 
+u32 surface_offset;
+u32 *surface_mem;
+u32 surface_w;
+u32 surface_h;
+u32 surface_p;
+
+
 // char font
 extern unsigned char msx[];
 u32 *texture_font;
@@ -39,6 +46,9 @@ struct t_stars { // to draw background stars
     float x,y;
     u32 color;
 } stars[256];
+
+float light0_x = 0.0f;
+float light0_step = 5.0f;
 
 void drawStage1(int substage)
 {
@@ -60,17 +70,40 @@ void drawStage1(int substage)
 
     // calculating modelview
 
-    tmp =    MatrixTranslation(0, 0.0, 80);
+    tmp    = MatrixTranslation(0, 0.0, 80);
     matrix = MatrixRotationY(angY);
     matrix = MatrixMultiply(matrix, tmp);
 
     // fix ModelView Matrix
     tiny3d_SetMatrixModelView(&matrix);
 
-    CreateSphere(8.0, 8.0, 32, 32, 1.0, 0.0, 0.0, 1.0);
+    light0_x += light0_step;
+
+    if(light0_x <= -500) light0_step =  5;
+    if(light0_x >=  500) light0_step = -5;
+
+    tiny3d_SetLightsOff();
+    tiny3d_SetAmbientLight(0.5f, 0.5f, 0.5f);
+    tiny3d_SetLight(0, 50.0f + light0_x, 50.0f, 0.0f, 0.95f, 0.95f, 0.95f,  LIGHT_SPECULAR);
+    tiny3d_SetLight(1, -500.0f, 500.0f, 0.0f, 0.95f, 0.95f, 0.0f, LIGHT_SPECULAR);
+    tiny3d_SetLight(2, 0.0f, -500.0f, 0.0f, 0.0f, 0.95f, 0.0f, LIGHT_SPECULAR);
+
+    tiny3d_EmissiveMaterial(0.0f,  0.0f,  0.0, 0.0f);
+    tiny3d_AmbientMaterial(0.33f, 0.33f, 0.33f, 1.0f);
+    tiny3d_DiffuseMaterial(0.58f, 0.58, 0.58, 1.0f);
+    tiny3d_SpecularMaterial(0.99f, 0.99f, 0.99f, 27.8f);
+
+    CreateSphereNormal(8.0, 8.0, 32, 32);
+
+    int n,m;
+
+    tiny3d_EmissiveMaterial(0.00f, 0.00f, 0.00f, 0.00f);
+    tiny3d_AmbientMaterial( 0.00f, 0.00f, 0.33f, 1.00f);
+    tiny3d_DiffuseMaterial( 0.00f, 0.00f, 0.48f, 1.00f);
+    tiny3d_SpecularMaterial(0.99f, 0.99f, 0.99f, 27.8f/4.0f);
 
     // draw big wired sphere
-    if(substage > 2) CreateSphereLine(32.0, 32.0, 32, 32, 0.0, 0.0, 1.0, 1.0);
+    if(substage > 2) CreateSphereLine(32.0, 32.0, 32, 32);
 
     // draw translucent sphere
     if(substage > 1) CreateSphere(9.0, 9.0, 32, 32, 0.0, 1.0, 1.0, 0.3);
@@ -88,7 +121,7 @@ void drawStage1(int substage)
         // fix ModelView Matrix
         tiny3d_SetMatrixModelView(&matrix);
 
-        CreateSphere(4.0, 4.0, 32, 32, 1.0, 1.0, 1.0, 1.0);
+        CreateSphereNormal(4.0, 4.0, 32, 32);
     }
         
  
@@ -113,19 +146,49 @@ void drawStage2(int substage)
     tiny3d_SetProjectionMatrix(&tmp);
 
     // calculating modelview
-    tmp=MatrixTranslation(0, 0.0, 80);
-    matrix=MatrixRotationY(angY);
+    tmp    = MatrixTranslation(0, 0.0, 80);
+    matrix = MatrixRotationY(angY);
     matrix = MatrixMultiply(matrix, tmp);
 
     // fix ModelView Matrix
     tiny3d_SetMatrixModelView(&matrix);
 
+    light0_x += light0_step;
+
+    if(light0_x <= -500) light0_step =  5;
+    if(light0_x >=  500) light0_step = -5;
+
+    tiny3d_SetLightsOff();
+    tiny3d_SetAmbientLight(0.5f, 0.5f, 0.5f);
+    tiny3d_SetLight(0, 50.0f + light0_x, 50.0f, 0.0f, 0.95f, 0.95f, 0.95f,  LIGHT_SPECULAR);
+    tiny3d_SetLight(1, -500.0f, 500.0f, 0.0f, 0.95f, 0.95f, 0.0f, LIGHT_SPECULAR);
+    tiny3d_SetLight(2, 0.0f, -500.0f, 0.0f, 0.0f, 0.95f, 0.0f, LIGHT_SPECULAR);
+
+    tiny3d_EmissiveMaterial(0.00f, 0.00f, 0.00f, 0.00f);
+    tiny3d_AmbientMaterial( 0.33f, 0.33f, 0.33f, 1.00f);
+    tiny3d_DiffuseMaterial( 0.58f, 0.58f, 0.58f, 1.00f);
+    tiny3d_SpecularMaterial(0.99f, 0.99f, 0.99f, 27.8f);
+
+
     // Load texture1
-	tiny3d_SetTexture(0, texture1_offset, texture1.width, texture1.height, texture1.wpitch,  TINY3D_TEX_FORMAT_A8R8G8B8, 1);
-    CreateSphereTextured(8.0, 8.0, 32, 32, 1.0, 1.0, 1.0, 1.0);
+    tiny3d_SetTextureWrap(0, texture1_offset, texture1.width, texture1.height, texture1.wpitch,  TINY3D_TEX_FORMAT_A8R8G8B8,
+                TEXTWRAP_CLAMP, TEXTWRAP_CLAMP, TEXTURE_LINEAR);
+
+    CreateSphereNormalTextured(8.0, 8.0, 32, 32);
+
+
+    tiny3d_EmissiveMaterial(0.00f, 0.00f, 0.00f, 0.00f);
+    tiny3d_AmbientMaterial( 0.00f, 0.00f, 0.33f, 1.00f);
+    tiny3d_DiffuseMaterial( 0.00f, 0.00f, 0.48f, 1.00f);
+    tiny3d_SpecularMaterial(0.99f, 0.99f, 0.99f, 27.8f/4.0f);
    
     // draw big wired sphere
-    if(substage > 2) CreateSphereLine(32.0, 32.0, 32, 32, 0.0, 0.0, 1.0, 1.0);
+    if(substage > 2) CreateSphereLine(32.0, 32.0, 32, 32);
+
+    tiny3d_EmissiveMaterial(0.0f,  0.2f,  1.0, 0.0f);
+    tiny3d_AmbientMaterial(0.0f, 0.0f, 0.0f, 1.0f);
+    tiny3d_DiffuseMaterial(0.48f, 0.48f, 0.48f, 1.0f);
+    tiny3d_SpecularMaterial(0.99f, 0.99f, 0.99f, 27.8/4.0f);
 
     // draw translucent sphere
     if(substage > 1) CreateSphere(9.0, 9.0, 32, 32, 0.0, 1.0, 1.0, 0.3);
@@ -143,16 +206,17 @@ void drawStage2(int substage)
         tiny3d_SetMatrixModelView(&matrix);
 
         // Load texture2
-        tiny3d_SetTexture(0, texture2_offset, texture2.width, texture2.height, texture2.wpitch,  TINY3D_TEX_FORMAT_A8R8G8B8, 1);
+        
+        tiny3d_SetTextureWrap(0, texture2_offset, texture2.width, texture2.height, texture2.wpitch,  TINY3D_TEX_FORMAT_A8R8G8B8,
+                TEXTWRAP_CLAMP, TEXTWRAP_CLAMP, TEXTURE_LINEAR);
         
         if(substage==1)
-            CreateSphere(4.0, 4.0, 32, 32, 1.0, 1.0, 1.0, 1.0);
+            CreateSphereNormal(4.0, 4.0, 32, 32);
         else
-            CreateSphereTextured(4.0, 4.0, 32, 32, 1.0, 1.0, 1.0, 1.0);
+            CreateSphereNormalTextured(4.0, 4.0, 32, 32);
     }
 
 }
-
 
 
 void LoadTexture()
@@ -235,6 +299,14 @@ void LoadTexture()
         texture2_offset = tiny3d_TextureOffset(texture2.bmp_out);      // get the offset (RSX use offset instead address)
      }
 
+    // create the render surface texture
+
+    surface_offset = tiny3d_TextureOffset(texture_pointer);
+    surface_mem = texture_pointer;
+    surface_w = 1920;
+    surface_h = 1080;
+    surface_p = surface_w * 4;
+    texture_pointer += surface_w * surface_h;
 }
 
 struct t_message {
@@ -244,7 +316,14 @@ struct t_message {
     int command;
 };
 
-extern struct t_message message[50];
+extern struct t_message message[54];
+
+void exiting()
+{
+
+    SysUnloadModule(SYSMODULE_PNGDEC);
+  
+}
 
 s32 main(s32 argc, const char* argv[])
 {
@@ -252,11 +331,15 @@ s32 main(s32 argc, const char* argv[])
 	PadData paddata;
 	int i;
 	
-	tiny3d_Init(1024*1024);
+    // initalize Tiny3D using Z16 and 4MB for vertex datas
+
+	tiny3d_Init(TINY3D_Z16 | 4*1024*1024);
 
 	ioPadInit(7);
     
     SysLoadModule(SYSMODULE_PNGDEC);
+
+    atexit(exiting); // Tiny3D register the event 3 and do exit() call when you exit  to the menu
 
 	// Load texture
 
@@ -276,6 +359,8 @@ s32 main(s32 argc, const char* argv[])
     int mess_counter =  message[nmess].time;
     int stage = message[nmess].command - 1;
 
+    int enable_sphere = 0;
+
   
 	
 	// Ok, everything is setup. Now for the main loop.
@@ -283,9 +368,10 @@ s32 main(s32 argc, const char* argv[])
 
         /* DRAWING STARTS HERE */
 
+        // RENDERING IN ONE TEXTURE (surface)
         // clear the screen, buffer Z and initializes environment to 2D
 
-        tiny3d_Clear(0xff000000, TINY3D_CLEAR_ALL);
+        tiny3d_ClearSurface(0x0000000, TINY3D_CLEAR_ALL, surface_offset, surface_w, surface_h, surface_p, CLEARSURFACE_A8R8G8B8);
 
         // Enable alpha Test
         tiny3d_AlphaTest(1, 0x10, TINY3D_ALPHA_FUNC_GEQUAL);
@@ -295,7 +381,8 @@ s32 main(s32 argc, const char* argv[])
             NV30_3D_BLEND_FUNC_DST_RGB_ONE_MINUS_SRC_ALPHA | NV30_3D_BLEND_FUNC_DST_ALPHA_ZERO,
             TINY3D_BLEND_RGB_FUNC_ADD | TINY3D_BLEND_ALPHA_FUNC_ADD);
         
-        if(stage == 130) goto skip_draw;
+        if(stage == 130) {tiny3d_Clear(0xff000000, TINY3D_CLEAR_ALL);goto skip_draw;}
+
 
         /* drawing stars */
  
@@ -311,7 +398,6 @@ s32 main(s32 argc, const char* argv[])
         }
 
 	    tiny3d_End();
-      
 
 		// Check the pads.
 		ioPadGetInfo(&padinfo);
@@ -325,6 +411,9 @@ s32 main(s32 argc, const char* argv[])
 			}
 			
 		}
+
+        if(stage == 8)   enable_sphere = 1;
+        if(stage == 128) enable_sphere = 0;
 
         if(stage < 128) {
 		    if(stage < 8) 
@@ -350,7 +439,102 @@ s32 main(s32 argc, const char* argv[])
         /* DRAW HEADER TEXT */
         if(stage == 128) PrintStr( (848 - strlen(message[nmess].mess) * 16) / 2, 16, 0, message[nmess].mess, 0x00ff00ff);
         else PrintStr( (848 - strlen(message[nmess].mess) * 16) / 2, 16, 0, message[nmess].mess, 0xffffffff);
+
+
+        // RENDERING IN THE REAL SCREEN
+
+        tiny3d_Clear(0xff000000, TINY3D_CLEAR_ALL);
+         
+        // draw the surface before to enable alpha test
+        // this surface countain the real scene captured in one texture of 1920 x 1080
+
+        tiny3d_SetTextureWrap(0, surface_offset, surface_w,
+            surface_h, surface_p,  
+            TINY3D_TEX_FORMAT_A8R8G8B8, TEXTWRAP_CLAMP, TEXTWRAP_CLAMP, TEXTURE_LINEAR);
+
+        tiny3d_SetPolygon(TINY3D_QUADS);
+
+        tiny3d_VertexPos(0  , 0  , 65535);
+        tiny3d_VertexColor(0xffffffff);
+        tiny3d_VertexTexture(0.0f, 0.0f);
+
+        tiny3d_VertexPos(848, 0  , 65535);
+        tiny3d_VertexTexture(1.0f, 0.0f);
+
+        tiny3d_VertexPos(848, 512, 65535);
+        tiny3d_VertexTexture(1.0f, 1.0f);
+       
+
+        tiny3d_VertexPos(0  , 512, 65535);
+        tiny3d_VertexTexture(0.0f, 1.0f);
+      
+
+        tiny3d_End();
+
+        if(enable_sphere) {
+
+            // Enable alpha Test
+            tiny3d_AlphaTest(1, 0x10, TINY3D_ALPHA_FUNC_GEQUAL);
+
+            // Enable alpha blending.
+            tiny3d_BlendFunc(1, TINY3D_BLEND_FUNC_SRC_RGB_SRC_ALPHA | TINY3D_BLEND_FUNC_SRC_ALPHA_SRC_ALPHA,
+                NV30_3D_BLEND_FUNC_DST_RGB_ONE_MINUS_SRC_ALPHA | NV30_3D_BLEND_FUNC_DST_ALPHA_ZERO,
+                TINY3D_BLEND_RGB_FUNC_ADD | TINY3D_BLEND_ALPHA_FUNC_ADD);
+
+
+            MATRIX tmp;
+            static float angY =0.0;
+            
+            angY += 0.025; // update rotation
+
+            // enable 3D
+
+            tiny3d_Project3D(); // change to 3D context
+
+            // fix Perspective Projection Matrix
+
+            tmp = MatrixProjPerspective( 90, (float) (Video_aspect == 1) ? 9.0f / 16.0f :  1.0f, 0.00125F, 300.0F);
+
+            tiny3d_SetProjectionMatrix(&tmp);
+
+            // calculating modelview
+            tmp=MatrixTranslation(60, 0.0, 80);
+            matrix=MatrixRotationY(angY);
+            matrix = MatrixMultiply(matrix, tmp);
+
+            // fix ModelView Matrix
+            tiny3d_SetMatrixModelView(&matrix);
+            
+            // lighting
+            tiny3d_SetLightsOff();
+            tiny3d_SetAmbientLight(0.5f, 0.5f, 0.5f);
+            tiny3d_SetLight(0, 50.0f, 50.0f, 0.0f, 0.95f, 0.95f, 0.95f,  LIGHT_DIFFUSE);
+            
+            // material
+            tiny3d_EmissiveMaterial(0.0f,  0.0f,  0.0, 0.0f);
+            tiny3d_AmbientMaterial(0.33f, 0.33f, 0.33f, 1.0f);
+            tiny3d_DiffuseMaterial(0.58f, 0.58, 0.58, 1.0f);
+            tiny3d_SpecularMaterial(0.99f, 0.99f, 0.99f, 27.8f);
+           
+           // texture 0
+            tiny3d_SetTextureWrap(0, texture1_offset, texture1.width, texture1.height, texture1.wpitch,  TINY3D_TEX_FORMAT_A8R8G8B8,
+                TEXTWRAP_CLAMP, TEXTWRAP_CLAMP, TEXTURE_LINEAR);
+
+            // texture1
+            tiny3d_SetTextureWrap(1, surface_offset, surface_w,
+                surface_h, surface_p,  
+                TINY3D_TEX_FORMAT_A8R8G8B8, TEXTWRAP_CLAMP, TEXTWRAP_CLAMP, TEXTURE_LINEAR);
+
+            tiny3d_SelMultiTexturesMethod(MT_MADD_B_METHOD);
+
+            CreateSphereNormalTextured2(12.0, 12.0, 32, 32);
+        }
         
+        if(tiny3d_MenuActive()) {
+            char str[]= "Menu Active";
+            PrintStr( (848 - strlen(str) * 16) / 2, 460, 0, str, 0xffffffff);
+        }
+
 skip_draw:
 
         mess_counter--; if(mess_counter <= 0) {nmess++; if(message[nmess].mess[0] == 0) nmess = 0; mess_counter =  message[nmess].time;}
@@ -364,15 +548,15 @@ skip_draw:
 		
 	}
 
-    SysUnloadModule(SYSMODULE_PNGDEC);
+    
 	
 	return 0;
 }
 
-struct t_message message[50] =
+struct t_message message[54] =
 {
     {"Hello World !!!", 180, 1},
-    {"This is the first sample", 180, 0}, 
+    {"This is the first advanced sample", 180, 0}, 
     {"of the Tiny3D library", 180, 0},
     {"In the following seconds the sample", 180, 0},
     {"will go through by different stages", 180, 2},
@@ -387,13 +571,18 @@ struct t_message message[50] =
     {"background stars is drawing in 2D", 180, 0},
     {"and of course, this text :)", 180, 0},
     {"You are seeing the stage 1 of this sample", 180, 0},
-    {"Here i use Pixel and Vertex shaders", 180, 0},
-    {"for color only. The light is not real light", 180, 0},
-    {"it is made by software.", 180, 0},
-    {"Stage 2: Working with Textures", 180, 9},
-    {"Here you have a textured sphere", 180, 0},
-    {"with color modulation", 180, 0},
-    {"it uses a new Pixel Shader to work", 180, 0},
+    {"Here i render color spheres only", 180, 0},
+    {"It uses 3 specular lights from the shader", 180, 0},
+    {"and you can see white light moving", 180, 0},
+    {"This sample is rendered in one texture", 180, 0},
+    {"of 1920x1080 and drawing it as one Quad", 180, 0},
+    {"Stage 2: Working with Textured Spheres", 180, 9},
+    {"Here you have textured spheres", 180, 0},
+    {"The cyan of the right uses double texture", 180, 0},
+    {"and you can see wrapped the scene here", 180, 0},
+    {"In the screen surface is drawing the Quad", 180, 0},
+    {"background and the cyan sphere.", 180, 0},
+    {"The rest is rendered in one texture ", 180, 0},
     {"Tiny3D automatically changes the shader", 180, 0},
     {"making it easy for the programmer", 180, 10},
     {"Now you can see textured and not textured", 180, 0},
@@ -404,6 +593,8 @@ struct t_message message[50] =
     {"It uses TINY3D_QUADS and TINY3D_LINE_LOOP", 180, 0},
     {"for solid and wired spheres", 180, 0},
     {"background uses TINY3D_TRIANGLES", 180, 0},
+    {"central scene uses 3 specular lights", 180, 0},
+    {"but cyan sphere uses 1 diffuse lights", 180, 0},
     {"I hope you enjoy it!!!", 240, 0},
     {"Thanks to ElSemi, AerialX, Phire and others", 240, 0},
     {"PSL1GHT contributors ^^", 480, 0},

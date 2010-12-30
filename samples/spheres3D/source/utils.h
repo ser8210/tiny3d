@@ -13,11 +13,15 @@ extern u32 font_w;
 extern u32 font_h;
 extern u32 font_s;
 
-void CreateSphere(float rx, float dy, int sx, int sy, float r, float g, float b, float a);
+void CreateSphere(float rx, float ry, int sx, int sy, float r, float g, float b, float a);
 
-void CreateSphereTextured(float rx, float dy, int sx, int sy, float r, float g, float b, float a);
+void CreateSphereNormal(float rx, float ry, int sx, int sy);
 
-void CreateSphereLine(float rx, float ry, int sx, int sy, float r, float g, float b, float a);
+void CreateSphereNormalTextured(float rx, float ry, int sx, int sy);
+
+void CreateSphereNormalTextured2(float rx, float ry, int sx, int sy);
+
+void CreateSphereLine(float rx, float ry, int sx, int sy);
 
 void DrawCorners2d(float x, float y, float z, u32 rgba);
 
