@@ -10,6 +10,15 @@ PS3loadX is my personal evolution of PSL1GHT PS3load sample, using now the Tiny3
 
 - Also you can delete installed applications.
 
+NOTE:
+-----
+
+You can include this lines in your app to return to the PS3LoadX application
+
+include <lv2/process.h>
+.....
+sysProcessExitSpawn2("/dev_hdd0/game/PSL145310/RELOAD.SELF", NULL, NULL, NULL, 0, 1001, SYS_PROCESS_SPAWN_STACK_SIZE_1M);
+
 ZIP Format
 ----------
 

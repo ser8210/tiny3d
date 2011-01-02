@@ -1,0 +1,9 @@
+fp color.fp color
+fp texture.fp texture
+fp texture_color.fp texture_color
+fp texture2.fp texture2
+fp texture2_alt.fp texture2_alt
+fp texture2_alt2.fp texture2_alt2
+fp texture_color2.fp texture_color2
+fp texture_color2_alt.fp texture_color2_alt
+fp texture_color2_alt2.fp texture_color2_alt2
