@@ -12,6 +12,7 @@ all:
 	$(MAKE) -C surfaces
 	@if test -e $(FTINCLUDE); then $(MAKE) -C fonts_from_ttf; fi
 	@if test -e $(ZIPINCLUDE); then $(MAKE) -C ps3loadx; fi
+	$(MAKE) -C yuv
 
 pkg:
 	$(MAKE) pkg -C spheres3D
@@ -20,6 +21,7 @@ pkg:
 	$(MAKE) pkg -C surfaces
 	@if test -e $(FTINCLUDE); then $(MAKE) pkg -C fonts_from_ttf; fi
 	@if test -e $(ZIPINCLUDE); then $(MAKE) pkg -C ps3loadx; fi
+	$(MAKE) pkg -C yuv
 
 clean:
 	$(MAKE) clean -C spheres3D
@@ -28,5 +30,6 @@ clean:
 	$(MAKE) clean -C surfaces
 	@if test -e $(FTINCLUDE); then $(MAKE) clean -C fonts_from_ttf; fi
 	@if test -e $(ZIPINCLUDE); then $(MAKE) clean -C ps3loadx; fi
+	$(MAKE) clean -C yuv
 
 
