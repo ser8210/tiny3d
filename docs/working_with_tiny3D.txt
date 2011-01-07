@@ -88,8 +88,25 @@ More later, you can load the texture before to draw an object with this function
 
     void tiny3d_SetTexture(u32 unit, u32 offset, u32 width, u32 height, u32 stride, text_format fmt, int smooth);
 
-Usually, unit = 0, offset = RSX texture offset, width and height don´t need explanation, stride can be width*4 if you are using 32 bit color,
-fmt can be TINY3D_TEX_FORMAT_A8R8G8B8 for 32 bits color ans smooth 1 or 0.
+Usually, unit = 0 (TEX0, use 1 for TEX1, etc)), offset = RSX texture offset, width and height don´t need explanation, stride can be width*4 
+if you are using 32 bit color, fmt can be TINY3D_TEX_FORMAT_A8R8G8B8 for 32 bits color ans smooth 1 or 0.
+
+Also you have this function to Wrap the texture:
+
+    #define TEXTWRAP_REPEAT 0
+    #define TEXTWRAP_CLAMP  1
+    #define TEXTWRAP_MIRROR 2
+
+    // set texture to draw with wrap options
+
+    void tiny3d_SetTextureWrap(u32 unit, u32 offset, u32 width, u32 height, u32 stride, text_format fmt, int wrap_u, int wrap_v, int smooth);
+
+Use defines in wrap_u and wrap_v.
+
+TEXTWRAP_REPEAT -> texture coordinates 0.0 - 1.0 -2.0, 3.0 .... (tiny3d_SetTexture() use this method)
+TEXTWRAP_CLAMP  -> texture coordinates 0.0 - 1.0
+TEXTWRAP_MIRROR -> texture coordinates -1.0 - 0.0 - 1.0
+
 
 Initializing a frame
 --------------------
@@ -172,15 +189,26 @@ The vertex functions are:
     // position: it must be the first vertex function to call
     void tiny3d_VertexPos(float x, float y, float z);            // here w is initialized to 1.0f internally
     void tiny3d_VertexPos4(float x, float y, float z, float w);
+    void tiny3d_VertexPosVector(VECTOR v);
 
     //color: fix color method
     void tiny3d_VertexColor(u32 rgba); // ((r<<24) | (g<<16) | (b<<8) | a) range: 0 - 0xff
     void tiny3d_VertexFcolor(float r, float g, float b, float a);  // range 0.0f to 1.0f
 
-    // texture: texture coords
-    void tiny3d_VertexTexture(float u, float v); // range (0.0f to 1.0f)
+    // texture: texture coords (TEX0)
+    void tiny3d_VertexTexture(float u, float v); // range (0.0f to 1.0f is the base, but depend of the wrap option)
+
+    // texture2: textures2 coords (TEX1)
+    void tiny3d_VertexTexture2(float u, float v); // range (0.0f to 1.0f is the base, but depend of the wrap option)
+
+
+    // normal: normal coords 
+    void tiny3d_Normal(float x, float y, float z);
+    void tiny3d_NormalVector(VECTOR v);
+
 
 VertexColor() and VertexFcolor() functions are exclusives. It is because the vertex size are different. VertexFcolor() have preference.
+Nomals excludes Color attributes because it use Materials
 
 Note that it is possible to send one color for the first vertex and not specify that attribute in the following vertex because the first active the
 internal flag of this attribute and the values are stored and retained in the internal structure used to send the vertex attributes.
@@ -295,6 +323,186 @@ As you can see to produce 3 triangles, you only needs to send 5 vertex. I you do
 example to understand it.
 
 PS3 have the ability to draw polygons. With TINY3D_POLYGON you can for example, with 5 vertex using the clockwise rule, draw a pentagon.
+
+##############################################################################################################################################
+#                                                            ADVANCED USES                                                                   #
+##############################################################################################################################################
+
+Lights and Materials
+====================
+
+When you uses normals attributes, Vertex Shaders changes the work mode to use lights (ambient + 4 positional diffuse/specular lights)
+
+Materials defines the behavior of the light when impact the object:
+
+    // EmissiveMaterial:
+    // r,g,b: color components (0.0f to 1.0f)
+    // a: Unused
+
+    void tiny3d_EmissiveMaterial(float r, float g, float b, float a); // emissive light from the object
+
+    // AmbientMaterial:
+    // r,g,b: color components (0.0f to 1.0f)
+    // a: Alpha component. Translucency control (0.0f to 1.0f)
+
+    void tiny3d_AmbientMaterial (float r, float g, float b, float a); // ambiental light (minimun light level)
+
+    // DiffuseMaterial:
+    // r,g,b: color components (0.0f to 1.0f)
+    // a: 0.0 -> disable, other value -> enable
+
+    void tiny3d_DiffuseMaterial (float r, float g, float b, float a); // diffuse light (light absortion)
+
+    // SpecularMaterial:
+    // r,g,b: color components (0.0f to 1.0f)
+    // shininess: 0.0 -> disable specular, other value -> shininess 
+
+    void tiny3d_SpecularMaterial(float r, float g, float b, float shininess); // specular light (light reflection)
+
+Lights functions
+----------------
+
+    // ambiental light multiplier
+
+    void tiny3d_SetAmbientLight(float r, float g, float b); // multiply the ambiental material light
+
+    // camera position reference for position lights
+
+    void tiny3d_SetLightCameraPosition(float x, float y, float z); // lights are positional: you can use this to create an angle reference to the camera
+
+    // set positional light
+    // indx: 0 to 3 (4 lights supported)
+    // x,y,z: space position
+    // r,g,b: color components (0.0f to 1.0f)
+    // mode: 1 -> light diffuse, 2 -> light specular, 0-> light disable
+
+    // modes
+    #define LIGHT_DISABLED 0 
+    #define LIGHT_DIFFUSE  1
+    #define LIGHT_SPECULAR 2
+
+    void tiny3d_SetLight(int indx, float x, float y, float z, float r, float g, float b, int mode);
+
+    // disable all lights
+
+    void tiny3d_SetLightsOff();
+
+LIST
+====
+
+List can records static and  dinamyc matrix (extern matrix), materials atributes, changes of textures, vertex attributes and polygons.
+
+You can concatenate list using the function tiny3d_DrawList() into the current recorded list.
+
+
+            // start recording list of polygon, vertex, textures, material, matrix propierties
+
+    int tiny3d_RecordList(); // first function to call to  start the record
+
+            // use this instead tiny3d_SetMatrixModelView() to set one external-dynamic matrix
+
+    void tiny3d_DynamicMatrixList(MATRIX *mat); // put one matrix to control the object externally
+
+            // use this instead tiny3d_SetMatrixModelView() to apply the matrix changes directly
+
+    void tiny3d_ApplyMatrixList(MATRIX *mat); // apply directly the matrix to the vertex position and normals
+
+            // Record list stop and return the head of the list command
+
+    void * tiny3d_StopList();  // last function to call (return the recorded list)
+
+            // draw list. Also can link the list with the recording current list (hierarchy lists)
+
+    void tiny3d_DrawList(void * headlist); // draw the list. You can concatenate this function in others list recording
+
+            // free list (is not recursive)
+
+    void tiny3d_FreeList(void * headlist); // to free the current list. If you have concatenate list call to this function individually for the list
+
+
+Functions to use into one recording list
+----------------------------------------
+
+    void tiny3d_SetMatrixModelView(MATRIX *mat); // effect : put one static matrix (when you call to DrawList this matrix is the first to multiply)
+
+    void tiny3d_ApplyMatrixList(MATRIX *mat); // apply directly the matrix to the vertex position and normals to create the object
+
+    void tiny3d_DynamicMatrixList(MATRIX *mat); // put one matrix to control the object externally (if you modify the matrix, the object changes)
+
+    int tiny3d_SetPolygon(type_polygon type); 
+    int tiny3d_End();
+
+    void tiny3d_VertexPos(float x, float y, float z);
+    void tiny3d_VertexPos4(float x, float y, float z, float w);
+    void tiny3d_VertexPosVector(VECTOR v);
+
+    void tiny3d_VertexColor(u32 rgba);
+    void tiny3d_VertexFcolor(float r, float g, float b, float a);
+
+    void tiny3d_VertexTexture(float u, float v);
+    void tiny3d_VertexTexture2(float u, float v);
+     
+    void tiny3d_Normal(float x, float y, float z);
+    void tiny3d_NormalVector(VECTOR v);
+
+    void tiny3d_EmissiveMaterial(float r, float g, float b, float a);
+
+    void tiny3d_AmbientMaterial (float r, float g, float b, float a);
+
+    void tiny3d_DiffuseMaterial (float r, float g, float b, float a);
+
+    void tiny3d_SpecularMaterial(float r, float g, float b, float shininess);
+
+    void tiny3d_SelMultiTexturesMethod(u32 method);
+    void tiny3d_SetTexture(u32 unit, u32 offset, u32 width, u32 height, u32 stride, text_format fmt, int smooth);
+    void tiny3d_SetTextureWrap(u32 unit, u32 offset, u32 width, u32 height, u32 stride, text_format fmt, int wrap_u, int wrap_v, int smooth);
+
+List Examples
+-------------
+
+// building material list
+
+    void *material_white_plastic = NULL;
+    
+    tiny3d_RecordList();
+
+    tiny3d_EmissiveMaterial(0.0f,  0.0f,  0.0, 0.0f);
+    tiny3d_AmbientMaterial(0.33f, 0.33f, 0.33f, 1.0f);
+    tiny3d_DiffuseMaterial(0.58f, 0.58, 0.58, 1.0f);
+    tiny3d_SpecularMaterial(0.99f, 0.99f, 0.99f, 128.8f);
+
+    material_white_plastic = tiny3d_StopList();
+
+    ..........................................
+
+    tiny3d_DrawList(material_white_plastic);
+
+// concatenate list
+
+    MATRIX tmp;
+
+    tiny3d_RecordList();
+
+    tiny3d_DrawList(material_white_plastic); // -> call to the first list
+
+    CreateSphereNormal(8.0, 8.0, 32, 32);
+
+    tmp = MatrixTranslation(0.0, -12.0, 0.0);
+
+    tiny3d_ApplyMatrixList(&tmp);
+
+    CreateCilinderNormal(4.0, 8.0, 32, 32);
+
+    list_object1 = tiny3d_StopList();
+
+    assert(list_object1);
+
+YUV
+===
+
+
+(building)
+
 
 i hope this little instructions aids to you to understand as Tiny3D works.
 

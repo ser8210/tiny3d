@@ -62,12 +62,16 @@ Support lights (4 positional specular / diffuse lights + ambient) and materials.
 
 Support double textures and dedicated surface rendering (You can render in the scene in one texture).
 
-It uses a configurable vertex shader and 9 pixel shaders to work
+Support for YUV surfaces using two methods. (See 'docs' and yuv sample)
+
+Support for list of objects (See 'docs' and tiny3d_list sample)
+
+It uses a configurable vertex shader and 'n' pixel shaders to work
 
 Added libfont.a with support for fonts based in bitmaps arrays of characters
 
-It works with six samples: spheres3D, sprites2D, surfaces, fonts, fonts_from_ttf
-and now ps3loadx
+It works with this samples: spheres3D, sprites2D, surfaces, fonts, fonts_from_ttf
+ps3loadx, yuv, tiny3d_lists
 
 spheres3D uses the advanced features of Tiny3D 2.0
 
