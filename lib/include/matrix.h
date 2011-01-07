@@ -22,6 +22,10 @@ typedef struct {
 
 MATRIX MatrixProjPerspective(float fov, float aspect, float near, float far);
 
+VECTOR MatrixVectorMultiply(MATRIX mat, VECTOR vec);
+
+VECTOR MatrixVectorMultiply3x3(MATRIX mat, VECTOR vec);
+
 MATRIX MatrixMultiply(MATRIX old_matrix, MATRIX new_matrix);
 
 MATRIX MatrixIdentity(void);
@@ -39,6 +43,12 @@ MATRIX MatrixRotationY(float angle);
 MATRIX MatrixRotationZ(float angle);
 
 MATRIX MatrixRotationAxis(float angle, VECTOR v);
+
+/* vectors */
+
+VECTOR VectorToUnit(VECTOR v);
+
+VECTOR VectorNormalPlane(VECTOR v1, VECTOR v2, VECTOR v3);
 
 
 #endif

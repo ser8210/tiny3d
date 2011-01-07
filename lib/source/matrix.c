@@ -38,6 +38,32 @@ MATRIX MatrixProjPerspective(float fov, float aspect, float near, float far)
     return project;
 }
 
+VECTOR MatrixVectorMultiply(MATRIX mat, VECTOR vec)
+{
+	float *m = (float *) &mat;
+    
+    VECTOR temp;
+	
+    temp.x = m[0] * vec.x + m[4] * vec.y + m[8]  * vec.z + m[12];
+    temp.y = m[1] * vec.x + m[5] * vec.y + m[9]  * vec.z + m[13];
+    temp.z = m[2] * vec.x + m[6] * vec.y + m[10] * vec.z + m[14];
+    
+    return temp;
+}
+
+VECTOR MatrixVectorMultiply3x3(MATRIX mat, VECTOR vec)
+{
+	float *m = (float *) &mat;
+    
+    VECTOR temp;
+	
+    temp.x = m[0] * vec.x + m[4] * vec.y + m[8]  * vec.z;
+    temp.y = m[1] * vec.x + m[5] * vec.y + m[9]  * vec.z;
+    temp.z = m[2] * vec.x + m[6] * vec.y + m[10] * vec.z;
+    
+    return temp;
+}
+
 MATRIX MatrixMultiply(MATRIX old_matrix, MATRIX new_matrix)
 {
 	MATRIX mo;
@@ -254,4 +280,42 @@ MATRIX MatrixRotationAxis(float angle, VECTOR v)
     }
 
     return result;
+}
+
+/* vectors */
+
+VECTOR VectorToUnit(VECTOR v)
+{
+    float len = sqrtf( v.x * v.x + v.y * v.y + v.z * v.z);
+
+    if(len == 0.0) len = 1.0f;
+
+    v.x /= len;
+    v.y /= len;
+    v.z /= len;
+
+    return v;
+}
+
+VECTOR VectorNormalPlane(VECTOR v1, VECTOR v2, VECTOR v3)
+{
+    VECTOR v, va, vb;
+
+    va.x = v1.x - v2.x;
+    va.y = v1.y - v2.y;
+    va.z = v1.z - v2.z;
+
+    vb.x = v2.x - v3.x;
+    vb.y = v2.y - v3.y;
+    vb.z = v2.z - v3.z;
+
+    v.x = va.y * vb.z - va.z * vb.y;
+
+    v.y = va.z * vb.x - va.x * vb.z;
+
+    v.z = va.x * vb.y - va.y * vb.z;
+
+    v = VectorToUnit(v);
+
+    return v;
 }

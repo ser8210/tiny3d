@@ -303,6 +303,7 @@ int tiny3d_End();
 
 void tiny3d_VertexPos(float x, float y, float z);
 void tiny3d_VertexPos4(float x, float y, float z, float w);
+void tiny3d_VertexPosVector(VECTOR v);
 
 // color: fix color method
 
@@ -320,6 +321,7 @@ void tiny3d_VertexTexture2(float u, float v);
 // normal: normal coords 
 
 void tiny3d_Normal(float x, float y, float z);
+void tiny3d_NormalVector(VECTOR v);
 
 /*---------------------------------------------------------------------------------------------------------------------------------------------*/
 /* LIGHTS & MATERIALS                                                                                                                          */
@@ -372,6 +374,58 @@ void tiny3d_DiffuseMaterial (float r, float g, float b, float a);
 
 void tiny3d_SpecularMaterial(float r, float g, float b, float shininess);
 
+/*---------------------------------------------------------------------------------------------------------------------------------------------*/
+/* LISTS                                                                                                                                       */
+/*---------------------------------------------------------------------------------------------------------------------------------------------*/
+
+// start recording list of polygon, vertex, textures, material, matrix propierties
+
+int tiny3d_RecordList();
+
+// use this instead tiny3d_SetMatrixModelView() to set one external-dynamic matrix
+
+void tiny3d_DynamicMatrixList(MATRIX *mat);
+
+// use this instead tiny3d_SetMatrixModelView() to apply the matrix changes directly
+
+void tiny3d_ApplyMatrixList(MATRIX *mat);
+
+// Record list stop and return the head of the list command
+
+void * tiny3d_StopList();
+
+// draw list. Also can link the list with the recording current list (hierarchy lists)
+
+void tiny3d_DrawList(void * headlist);
+
+// free list (is not recursive)
+
+void tiny3d_FreeList(void * headlist);
+
+/*---------------------------------------------------------------------------------------------------------------------------------------------*/
+/* SPECIAL MODES                                                                                                                               */
+/*---------------------------------------------------------------------------------------------------------------------------------------------*/
+
+// Enable YUV (Ycbcr) 32 bits Pixels shader for single texture. You need one A8R8G8B8 texture to work or 3 L8 textures for Y, U, V.
+// Only for Polygons with single texture or texture + color attributes
+
+// USE_AYUV_32BITS_TEXTURE works under A8R8G8B8 TEX0.
+// USE_YUV_8BIT_TEXTURES works under L8 textures mapped as TEX0, TEX1 and TEXT2 but only use TEXTURE0 coordinates for all (tiny3d_VertexTexture())
+
+
+#define USE_AYUV_32BITS_TEXTURE 0
+#define USE_YUV_8BIT_TEXTURES   1
+
+void tiny3d_Enable_YUV(int select);
+
+// Disable YUV (Ycbcr) 32 bits Pixel shader
+
+void tiny3d_Disable_YUV();
+
+// disable YUV, changes to 2D context and reset other things. You can use this function if you changes the shaders or send polygons OUT of Tiny3D
+// context and more later, you want return to the Tiny3D context (NOTE: Untested function)
+
+void tiny3d_Dirty_Status();
 
 /*---------------------------------------------------------------------------------------------------------------------------------------------*/
 /* VIDEO                                                                                                                                       */

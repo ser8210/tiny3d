@@ -26,6 +26,7 @@ static struct {
 
 static int tiny_3d_alarm = 0;
 static int use_2d = 0; // MODE 2D/3D
+static int enable_yuv = 0;
 
 #define Z_SCALE 1.0/65536.0
 
@@ -113,6 +114,7 @@ static struct _data_shader {
 
     void *fp;
     void *fp_alt[2];
+    void *fp_yuv[2];
 
     int size_vertex;
     int fixed_color;
@@ -158,6 +160,8 @@ static MATRIX project_mat;
 
 static MATRIX model_view;
 
+#include "list_code.h"
+
 #define CASE_POLYGON1(x, min, mod) case x: \
        min_vertex = min; mod_vertex = mod; break;
 
@@ -174,6 +178,10 @@ static void *fpshader_list[] = {
     &nv30_fp_texture_color2,
     &nv30_fp_texture_color2_alt,
     &nv30_fp_texture_color2_alt2,
+    &nv30_fp_yuv,
+    &nv30_fp_yuv8,
+    &nv30_fp_yuv_color,
+    &nv30_fp_yuv_color8,
     NULL
 };
 
@@ -245,7 +253,7 @@ int tiny3d_Init(u32 vertex_buff_size)
     while(fpshader_list[n]) {
 
         // install fragments shaders in rsx memory
-        u32 *frag_mem = rsxMemAlign(256, 256);
+        u32 *frag_mem = rsxMemAlign(256, (((realityFragmentProgram *) fpshader_list[n])->size * 4 + 255) & ~255);
     
         if(!frag_mem) return TINY3D_OUTMEMORY;
 
@@ -266,6 +274,8 @@ int tiny3d_Init(u32 vertex_buff_size)
         data_shader[n].vp           = (void *) vshader_text_normal_bin;
         data_shader[n].fp_alt[0]    = (void *) NULL;
         data_shader[n].fp_alt[1]    = (void *) NULL;
+        data_shader[n].fp_yuv[0]    = (void *) NULL;
+        data_shader[n].fp_yuv[1]    = (void *) NULL;
 
         data_shader[n].off_lightAmbient   = realityVertexProgramGetConstant((realityVertexProgram*) vshader_text_normal_bin, "lightAmbient");
         data_shader[n].off_lightColor     = realityVertexProgramGetConstant((realityVertexProgram*) vshader_text_normal_bin, "lightColor");
@@ -296,6 +306,8 @@ int tiny3d_Init(u32 vertex_buff_size)
     data_shader[2].off_color    = -1;
     data_shader[2].off_normal   = -1;
     data_shader[2].fp           = &nv30_fp_texture;
+    data_shader[2].fp_yuv[0]    = &nv30_fp_yuv;
+    data_shader[2].fp_yuv[1]    = &nv30_fp_yuv8;
     data_shader[2].size_vertex  = 16+8;
 
     data_shader[3].off_color    = -1; // texture + texture2
@@ -308,6 +320,8 @@ int tiny3d_Init(u32 vertex_buff_size)
     data_shader[4].off_texture2 = -1; // texture + colorf
     data_shader[4].off_normal   = -1;
     data_shader[4].fp           = &nv30_fp_texture_color;
+    data_shader[4].fp_yuv[0]    = &nv30_fp_yuv_color;
+    data_shader[4].fp_yuv[1]    = &nv30_fp_yuv_color8;
     data_shader[4].size_vertex  = 16+16+8;
 
     data_shader[5].off_normal   = -1; // texture + texture2 + colorf
@@ -320,6 +334,8 @@ int tiny3d_Init(u32 vertex_buff_size)
     data_shader[6].off_texture2 = -1;
     data_shader[6].off_normal   = -1;
     data_shader[6].fp           = &nv30_fp_texture_color;
+    data_shader[6].fp_yuv[0]    = &nv30_fp_yuv_color;
+    data_shader[6].fp_yuv[1]    = &nv30_fp_yuv_color8;
     data_shader[6].size_vertex  = 16+4+8;
     
     data_shader[7].fixed_color  = 1; // texture + texture2 + colori
@@ -534,8 +550,10 @@ static void set_shader_context(int old_shader)
                 REALITY_BUFFER_DATATYPE_FLOAT, REALITY_RSX_MEMORY);
         }
     }
-
-    if(data_shader[current_shader].fp_alt[0] == NULL)
+    
+    if(data_shader[current_shader].fp_yuv[0] && enable_yuv)
+        realityLoadFragmentProgram(context, data_shader[current_shader].fp_yuv[enable_yuv - 1]);
+    else if(data_shader[current_shader].fp_alt[0] == NULL)
         realityLoadFragmentProgram(context, data_shader[current_shader].fp);
     else {
 
@@ -552,6 +570,8 @@ static void set_shader_context(int old_shader)
 static void put_vertex()
 {
     
+//    if(n_vertex == 0 && off_head_vertex == 0 && off_start_vertex == pos_rsx_vertex) pos_rsx_vertex = (pos_rsx_vertex + 63) & ~63;
+
     if(pos_rsx_vertex > (size_rsx_vertex - 1024)) {tiny_3d_alarm = 1;flag_vertex =(flag_vertex & ~VERTEX_SETPOS) | VERTEX_LOCK; return;}
 
     if(flag_vertex & VERTEX_SETPOS) {
@@ -621,6 +641,12 @@ int tiny3d_SetPolygon(type_polygon type)
 
     if(type < TINY3D_POINTS || type > TINY3D_POLYGON) return TINY3D_INVALID;
 
+    if(grab_list) {
+        push_list_cmd(LIST_SETPOLYGON, 1); push_list_int(type);
+        flag_vertex &= ~VERTEX_LOCK;
+        return TINY3D_OK;
+    }
+
     polygon = type;
 
     switch(polygon) {
@@ -650,6 +676,11 @@ void tiny3d_VertexPos(float x, float y, float z)
     
     if(flag_vertex & VERTEX_LOCK) return;
 
+    if(grab_list) {
+        push_position_list(x, y, z, 1.0f);
+        return;
+    }
+
     put_vertex(); // previous vertex;
     
     vertex_data.x = x; vertex_data.y = y; vertex_data.z = z; vertex_data.w = 1.0f;
@@ -661,9 +692,31 @@ void tiny3d_VertexPos4(float x, float y, float z, float w)
 {
     if(flag_vertex & VERTEX_LOCK) return;
 
+    if(grab_list) {
+        push_position_list(x, y, z, w);
+        return;
+    }
+
     put_vertex(); // previous vertex;
     
     vertex_data.x = x; vertex_data.y = y; vertex_data.z = z; vertex_data.w = w;
+
+    flag_vertex |= VERTEX_SETPOS;
+}
+
+void tiny3d_VertexPosVector(VECTOR v)
+{
+    
+    if(flag_vertex & VERTEX_LOCK) return;
+
+    if(grab_list) {
+        push_position_list(v.x, v.y, v.z, 1.0f);
+        return;
+    }
+
+    put_vertex(); // previous vertex;
+    
+    vertex_data.x = v.x; vertex_data.y = v.y; vertex_data.z = v.z; vertex_data.w = 1.0f;
 
     flag_vertex |= VERTEX_SETPOS;
 }
@@ -674,6 +727,11 @@ void tiny3d_VertexColor(u32 rgba)
     vertex_data.rgba = rgba;
 
     if(flag_vertex & VERTEX_NORMAL) return;
+    
+    if(grab_list) {
+        push_list_cmd(LIST_VERTEXCOLOR, 1); push_list_int(rgba);
+        return;
+    }
 
     flag_vertex |= VERTEX_SETCOL;
 
@@ -686,21 +744,37 @@ void tiny3d_VertexFcolor(float r, float g, float b, float a)
 
     if(flag_vertex & VERTEX_NORMAL) return;
 
+     if(grab_list) {
+        push_list_cmd(LIST_VERTEXFCOLOR, 4); push_list_float(r); push_list_float(g); push_list_float(b); push_list_float(a);
+        return;
+    }
+
     flag_vertex |= VERTEX_SETFCOL;
 }
 
 void tiny3d_VertexTexture(float u, float v)
 {
-    
+
+    if(grab_list) {
+        push_list_cmd(LIST_VERTEXTEXTURE, 2); push_list_float(u); push_list_float(v);
+        return;
+    }
+
     vertex_data.u = u; vertex_data.v = v;
 
     flag_vertex |= VERTEX_SETTEXT;
+
 }
 
 void tiny3d_VertexTexture2(float u, float v)
 {
     
     if(!(flag_vertex & VERTEX_SETTEXT)) return;
+
+    if(grab_list) {
+        push_list_cmd(LIST_VERTEXTEXTURE2, 2); push_list_float(u); push_list_float(v);
+        return;
+    }
 
     vertex_data.u2 = u; vertex_data.v2 = v;
 
@@ -709,8 +783,24 @@ void tiny3d_VertexTexture2(float u, float v)
 
 void tiny3d_Normal(float x, float y, float z)
 {
+    if(grab_list) {
+        push_normal_list(x, y, z);
+        return;
+    }
     
     vertex_data.nx = x; vertex_data.ny = y; vertex_data.nz = z;
+
+    flag_vertex |= VERTEX_NORMAL;
+}
+
+void tiny3d_NormalVector(VECTOR v)
+{
+    if(grab_list) {
+        push_normal_list(v.x, v.y, v.z);
+        return;
+    }
+    
+    vertex_data.nx = v.x; vertex_data.ny = v.y; vertex_data.nz = v.z;
 
     flag_vertex |= VERTEX_NORMAL;
 }
@@ -718,6 +808,18 @@ void tiny3d_Normal(float x, float y, float z)
 
 int tiny3d_End()
 {
+     if(grab_list) {
+
+        push_list_cmd(LIST_POLYGONEND, 0);
+
+        n_vertex = 0;
+
+        polygon = -1;
+        flag_vertex = (flag_vertex & VERTEX_MASK) |  VERTEX_LOCK;
+
+        return TINY3D_OK;
+    }
+
     put_vertex(); // set the last vertex
     
     if(polygon > 0 && n_vertex >= min_vertex) {
@@ -747,13 +849,20 @@ int tiny3d_End()
 
             temp_shader = 1;  // with color u32
         }
-        
+   
+        // force to change the sahders under YUV
+
+        if(enable_yuv) {current_shader = -1;}
+
         if(temp_shader != current_shader) { // set the shader
             
             int old_shader = current_shader;
             current_shader = temp_shader;
             set_shader_context(old_shader);
-        } else if(data_shader[current_shader].fp_alt[0] != NULL && (select_fp & 128)!=0){    
+        } else if(data_shader[current_shader].fp_yuv[0] && enable_yuv)
+            realityLoadFragmentProgram(context, data_shader[current_shader].fp_yuv[enable_yuv - 1]);
+        
+        else if(data_shader[current_shader].fp_alt[0] != NULL && (select_fp & 128)!=0){    
              
             select_fp &= 15; // disable Pixel Shader Update
 
@@ -762,9 +871,10 @@ int tiny3d_End()
             else
                 realityLoadFragmentProgram(context, data_shader[current_shader].fp_alt[select_fp-1]);
         }
+ 
 
         select_fp &= 15; // disable Pixel Shader Update
-
+    
         if(flag_vertex & VERTEX_SETMATRIX) { // update matrix
 
             realitySetVertexProgramConstant4fBlock(context, data_shader[current_shader].off_modelv,  4, (float*)(model_view.data));
@@ -775,7 +885,9 @@ int tiny3d_End()
         
              if(!use_2d)
                 realitySetVertexProgramConstant4fBlock(context, data_shader[current_shader].off_project,  4, (float*)(project_mat.data));
-              
+             else
+                realitySetVertexProgramConstant4fBlock(context, data_shader[current_shader].off_project, 4, (float*)(matrix_ident.data));
+
             flag_vertex &= ~VERTEX_SETPROJ;
         }
 
@@ -803,6 +915,22 @@ int tiny3d_End()
 
 void tiny3d_SetMatrixModelView(MATRIX *mat)
 {
+    if(grab_list) {
+
+        set_apply_matrix = 0;
+
+        push_list_cmd(LIST_MATRIX, 16);
+
+        if(!mat) 
+            memcpy((void *) &curr_list[curr_list_index], (void *) &matrix_ident, 4*4*4);
+        else
+            memcpy((void *) &curr_list[curr_list_index], (void *) mat, 4*4*4);
+
+        curr_list_index += 16;
+
+        return;
+    }
+
     if(!mat) 
         model_view = matrix_ident;
     else
@@ -867,6 +995,8 @@ void tiny3d_Project2D()
 {
     use_2d = 1;
 
+    flag_vertex |= VERTEX_SETPROJ;
+
     if(render_target.target) {
         
         realityViewportTranslate(context, 0.0, 0.0, 0.0, 0.0);
@@ -905,6 +1035,8 @@ void tiny3d_Project2D()
 void tiny3d_Project3D()
 {
     use_2d = 0;
+
+    flag_vertex |= VERTEX_SETPROJ;
 
     if(render_target.target) {
         
@@ -1066,47 +1198,30 @@ void tiny3d_BlendFunc (int enable, blend_src_func src_fun, blend_dst_func dst_fu
 
 void tiny3d_SetTexture(u32 unit, u32 offset, u32 width, u32 height, u32 stride, text_format fmt, int smooth)
 {
-    realityTexture tex;
 
-    tex.swizzle =
-    NV30_3D_TEX_SWIZZLE_S0_X_S1 | NV30_3D_TEX_SWIZZLE_S0_Y_S1 |
-    NV30_3D_TEX_SWIZZLE_S0_Z_S1 | NV30_3D_TEX_SWIZZLE_S0_W_S1 |
-    NV30_3D_TEX_SWIZZLE_S1_X_X | NV30_3D_TEX_SWIZZLE_S1_Y_Y |
-    NV30_3D_TEX_SWIZZLE_S1_Z_Z | NV30_3D_TEX_SWIZZLE_S1_W_W ;
+    if(grab_list) {
 
-    tex.offset = offset;
+        push_list_cmd(LIST_SETTEXTURE, 9); push_list_int(unit); push_list_int(offset); push_list_int(width); push_list_int(height);
+        push_list_int(stride);push_list_int(fmt); push_list_int(TEXTWRAP_REPEAT); push_list_int(TEXTWRAP_REPEAT); push_list_int(smooth);
 
-    tex.format = fmt |
-    NV40_3D_TEX_FORMAT_LINEAR  | 
-    NV30_3D_TEX_FORMAT_DIMS_2D |
-    NV30_3D_TEX_FORMAT_DMA0 |
-    NV30_3D_TEX_FORMAT_NO_BORDER | (0x8000) |
-    (1 << NV40_3D_TEX_FORMAT_MIPMAP_COUNT__SHIFT);
-
-    tex.wrap =  NV30_3D_TEX_WRAP_S_REPEAT |
-    NV30_3D_TEX_WRAP_T_REPEAT |
-    NV30_3D_TEX_WRAP_R_REPEAT;
-
-    tex.enable = NV40_3D_TEX_ENABLE_ENABLE;
-
-    if(smooth)
-    tex.filter = NV30_3D_TEX_FILTER_MIN_LINEAR |
-           NV30_3D_TEX_FILTER_MAG_LINEAR | 0x3fd6;
-    else
-    tex.filter = NV30_3D_TEX_FILTER_MIN_NEAREST |
-           NV30_3D_TEX_FILTER_MAG_NEAREST | 0x3fd6;
-
-    tex.width = width;
-    tex.height = height;
-    tex.stride = stride;
-
-    realitySetTexture(context, unit, &tex);
+        return;
+    }
+    
+    tiny3d_SetTextureWrap(unit, offset, width, height, stride, fmt, TEXTWRAP_REPEAT, TEXTWRAP_REPEAT, smooth);
+    
 }
 
 
 void tiny3d_SetTextureWrap(u32 unit, u32 offset, u32 width, u32 height, u32 stride, text_format fmt, int wrap_u, int wrap_v, int smooth)
 {
     realityTexture tex;
+
+    if(grab_list) {
+
+        push_list_cmd(LIST_SETTEXTURE, 9); push_list_int(unit); push_list_int(offset); push_list_int(width); push_list_int(height);
+        push_list_int(stride);push_list_int(fmt); push_list_int(wrap_u); push_list_int(wrap_v); push_list_int(smooth);
+        return;
+    }
 
     tex.swizzle =
     NV30_3D_TEX_SWIZZLE_S0_X_S1 | NV30_3D_TEX_SWIZZLE_S0_Y_S1 |
@@ -1189,6 +1304,13 @@ u32 tiny3d_TextureOffset(void * text)
 
 void tiny3d_EmissiveMaterial(float r, float g, float b, float a)
 {
+    if(grab_list) {
+
+        push_list_cmd(LIST_EMISSIVE_MAT, 4); push_list_float(r); push_list_float(g); push_list_float(b); push_list_float(a);
+
+        return;
+    }
+
     material.emissive[0] = r;
     material.emissive[1] = g;
     material.emissive[2] = b;
@@ -1199,6 +1321,13 @@ void tiny3d_EmissiveMaterial(float r, float g, float b, float a)
 
 void tiny3d_AmbientMaterial(float r, float g, float b, float a)
 {
+    if(grab_list) {
+
+        push_list_cmd(LIST_AMBIENT_MAT, 4); push_list_float(r); push_list_float(g); push_list_float(b); push_list_float(a);
+
+        return;
+    }
+
     material.ambient[0] = r;
     material.ambient[1] = g;
     material.ambient[2] = b;
@@ -1209,6 +1338,13 @@ void tiny3d_AmbientMaterial(float r, float g, float b, float a)
 
 void tiny3d_DiffuseMaterial(float r, float g, float b, float a)
 {
+    if(grab_list) {
+
+        push_list_cmd(LIST_DIFFUSE_MAT, 4); push_list_float(r); push_list_float(g); push_list_float(b); push_list_float(a);
+
+        return;
+    }
+
     material.diffuse[0] = r;
     material.diffuse[1] = g;
     material.diffuse[2] = b;
@@ -1219,6 +1355,13 @@ void tiny3d_DiffuseMaterial(float r, float g, float b, float a)
 
 void tiny3d_SpecularMaterial(float r, float g, float b, float shininess)
 {
+    if(grab_list) {
+
+        push_list_cmd(LIST_SPECULAR_MAT, 4); push_list_float(r); push_list_float(g); push_list_float(b); push_list_float(shininess);
+
+        return;
+    }
+
     material.specular[0] = r;
     material.specular[1] = g;
     material.specular[2] = b;
@@ -1283,6 +1426,13 @@ void tiny3d_SetAmbientLight(float r, float g, float b)
 
 void tiny3d_SelMultiTexturesMethod(u32 method)
 {
+    if(grab_list) {
+
+        push_list_cmd(LIST_MULTITEXTURE, 1); push_list_int(method); 
+
+        return;
+    }
+
     if(method > 2) method = 2;
 
     select_fp = 128 | (method & 15);
@@ -1298,3 +1448,28 @@ int tiny3d_MenuActive() {
 
 }
 
+void tiny3d_Enable_YUV(int select) {
+
+    current_shader = -1;   
+    enable_yuv =1 + (select & 1);
+}
+
+void tiny3d_Disable_YUV() {
+
+    current_shader = -1;   
+    enable_yuv = 0;
+}
+
+void tiny3d_Dirty_Status() {
+
+    tiny3d_Disable_YUV();
+
+    n_vertex = 0;
+
+    polygon = -1;
+
+    flag_vertex = (flag_vertex & VERTEX_MASK) |  VERTEX_LOCK;
+
+    tiny3d_Project2D();
+    
+}

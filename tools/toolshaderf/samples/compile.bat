@@ -7,3 +7,7 @@ fp texture2_alt2.fp texture2_alt2
 fp texture_color2.fp texture_color2
 fp texture_color2_alt.fp texture_color2_alt
 fp texture_color2_alt2.fp texture_color2_alt2
+fp yuv.fp yuv
+fp yuv8.fp yuv8
+fp yuv_color.fp yuv_color
+fp yuv_color8.fp yuv_color8
