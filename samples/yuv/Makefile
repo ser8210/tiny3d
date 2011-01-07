@@ -12,8 +12,8 @@ INCLUDE		:=	include
 DATA		:=	data
 LIBS		:=	-ltiny3d -lfont -lgcm_sys -lreality -lsysutil -lio -lpngdec -lsysmodule -lm
 
-TITLE		:=	Sprite2D - Tiny3D
-APPID		:=	SPRITE2D1
+TITLE		:=	YUV - Tiny3D
+APPID		:=	YUV000001
 CONTENTID	:=	UP0001-$(APPID)_00-0000000000000000
 
 CFLAGS		+= -g -O2 -Wall --std=gnu99
