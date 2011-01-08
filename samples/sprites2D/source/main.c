@@ -139,7 +139,7 @@ void drawScene()
         // Load sprite texture
         tiny3d_SetTexture(0, texture_ghost_offset[cur_text], texture_ghost[cur_text].width,
             texture_ghost[cur_text].height, texture_ghost[cur_text].wpitch,  
-            TINY3D_TEX_FORMAT_A8R8G8B8, 1);
+            TINY3D_TEX_FORMAT_A8R8G8B8, TEXTURE_LINEAR);
 
         if(!rotar) {
             
@@ -250,13 +250,11 @@ void LoadTexture()
 
             memcpy(texture_pointer, texture_ghost[i].bmp_out, texture_ghost[i].wpitch * texture_ghost[i].height);
             
-            free(texture_ghost[i].bmp_out);
+            free(texture_ghost[i].bmp_out); // free the PNG because i don't need this datas
 
-            texture_ghost[i].bmp_out= texture_pointer;
+            texture_ghost_offset[i] = tiny3d_TextureOffset(texture_pointer);      // get the offset (RSX use offset instead address)
 
-            texture_pointer += (texture_ghost[i].wpitch/4 * texture_ghost[i].height + 3) & ~3; // aligned to 16 bytes (it is u32) and update the pointer
-
-            texture_ghost_offset[i] = tiny3d_TextureOffset(texture_ghost[i].bmp_out);      // get the offset (RSX use offset instead address)
+            texture_pointer += ((texture_ghost[i].wpitch * texture_ghost[i].height + 15) & ~15) / 4; // aligned to 16 bytes (it is u32) and update the pointer
          }
     }
 }
