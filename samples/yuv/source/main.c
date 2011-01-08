@@ -317,6 +317,7 @@ u8 * build_V_8bits(u8 *texture, u32 * argb, u32 w, u32 h, u32 stride)
 
     return texture;
 }
+
 void LoadTexture()
 {
 
@@ -381,7 +382,12 @@ void LoadTexture()
 
 }
 
+void exiting()
+{
 
+    SysUnloadModule(SYSMODULE_PNGDEC);
+  
+}
 
 s32 main(s32 argc, const char* argv[])
 {
@@ -395,6 +401,8 @@ s32 main(s32 argc, const char* argv[])
 	ioPadInit(7);
     
     SysLoadModule(SYSMODULE_PNGDEC);
+
+    atexit(exiting); // Tiny3D register the event 3 and do exit() call when you exit  to the menu
 
 	// Load texture
 
@@ -444,8 +452,6 @@ s32 main(s32 argc, const char* argv[])
         tiny3d_Flip();
 		
 	}
-	
-    SysUnloadModule(SYSMODULE_PNGDEC);
 
 	return 0;
 }
