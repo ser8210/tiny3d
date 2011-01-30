@@ -4,7 +4,7 @@ Tiny3D 2.0
 Tiny3D is one library to work with 2D/3D graphics (obsolete).
 
 NOTE: this repository will be removed on February 1, 2011 because the changes on PSL1GHT and
-the imposibity of the author to create the new environment
+the imposibity of the author to create the new environment.
 
 It uses PSL1GHT and install the libraries in PSL1GHT/lib, C Header files
 in PSL1GHT/include
