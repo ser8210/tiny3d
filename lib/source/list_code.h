@@ -20,6 +20,7 @@
 #define LIST_STOP 555
 #define LIST_NEXT 666
 
+#define LIST_BLOCK_SIZE 65536
 
 static int grab_list = 0;
 static u32 *list_base;
@@ -35,8 +36,8 @@ static void push_list_cmd(u32 cmd, u32 params)
 {
     if(grab_list !=1 ) return;
 
-    if(curr_list_index >= (4096-72)/4) {
-        u32 *p = malloc(4096);
+    if(curr_list_index >= (LIST_BLOCK_SIZE-72)/4) {
+        u32 *p = malloc(LIST_BLOCK_SIZE);
         if(!p) {curr_list[curr_list_index++] = LIST_STOP<<16; grab_list = 2; return;}
         curr_list[curr_list_index++] = (LIST_NEXT<<16) | 1;
         last_list = &curr_list[curr_list_index];
@@ -108,7 +109,7 @@ int tiny3d_RecordList() {
 
     set_apply_matrix = 0;
     
-    list_base = malloc(4096);
+    list_base = malloc(LIST_BLOCK_SIZE);
     if(!list_base) return -1;
 
     last_list = NULL;
@@ -130,7 +131,7 @@ void * tiny3d_StopList() {
 
     // optimize the list size
 
-    if(curr_list_index < 4096/4) {
+    if(curr_list_index < LIST_BLOCK_SIZE/4) {
         
         u32 *t = malloc(curr_list_index * 4);
         
