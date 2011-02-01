@@ -62,9 +62,22 @@ pkg: $(BUILD)
 	@mkdir -p $(BUILD)/pkg/USRDIR
 	@cp $(ICON0) $(BUILD)/pkg/
 	@cp $(BUILD)/../$(TARGET).self $(BUILD)/pkg/RELOAD.SELF
-	@$(FSELF) -n $(BUILD)/$(TARGET).elf $(BUILD)/pkg/USRDIR/EBOOT.BIN
+	#@$(FSELF) -n $(BUILD)/$(TARGET).elf $(BUILD)/pkg/USRDIR/EBOOT.BIN
+	@$(SELF_NPDRM) $(BUILD)/$(TARGET).elf $(BUILD)/pkg/USRDIR/EBOOT.BIN $(CONTENTID)
 	@$(SFO) -f $(SFOXML) $(BUILD)/pkg/PARAM.SFO
 	@$(PKG) --contentid $(CONTENTID) $(BUILD)/pkg/ $(OUTPUT).pkg
+	@cp $(OUTPUT).pkg $(OUTPUT).geohot.pkg
+	@$(PKG_GEO) $(OUTPUT).geohot.pkg
+
+pkgh341: $(BUILD)
+	@echo Creating PKG...
+	@mkdir -p $(BUILD)/pkg
+	@mkdir -p $(BUILD)/pkg/USRDIR
+	@cp $(ICON0) $(BUILD)/pkg/
+	@cp $(BUILD)/../$(TARGET).self $(BUILD)/pkg/RELOAD.SELF
+	@cp $(BUILD)/../payload/EBOOT.BIN $ $(BUILD)/pkg/USRDIR/EBOOT.BIN
+	@$(SFO) -f $(SFOXML) $(BUILD)/pkg/PARAM.SFO
+	@$(PKG) --contentid $(CONTENTID) $(BUILD)/pkg/ $(OUTPUT).cfw_hermes_3.41.pkg
 
 run: $(BUILD)
 	@$(PS3LOADAPP) $(OUTPUT).self

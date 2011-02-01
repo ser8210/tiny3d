@@ -95,8 +95,6 @@ void drawStage1(int substage)
 
     CreateSphereNormal(8.0, 8.0, 32, 32);
 
-    int n,m;
-
     tiny3d_EmissiveMaterial(0.00f, 0.00f, 0.00f, 0.00f);
     tiny3d_AmbientMaterial( 0.00f, 0.00f, 0.33f, 1.00f);
     tiny3d_DiffuseMaterial( 0.00f, 0.00f, 0.48f, 1.00f);

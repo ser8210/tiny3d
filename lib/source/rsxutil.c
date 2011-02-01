@@ -7,7 +7,7 @@
 #include <sysutil/video.h>
 #include <rsx/gcm.h>
 #include <rsx/reality.h>
-#include <rsx/commands.h>
+#include "commands.h"
 
 #include "rsxutil.h"
 
@@ -117,15 +117,15 @@ void flip(s32 buffer) {
 
 void setupRenderTarget(u32 currentBuffer) {
 	// Set the color0 target to point at the offset of our current surface
-	realitySetRenderSurface(context, REALITY_SURFACE_COLOR0, REALITY_RSX_MEMORY, 
+	internal_reality_SetRenderSurface(context, REALITY_SURFACE_COLOR0, REALITY_RSX_MEMORY, 
 					offset[currentBuffer], Video_pitch);
 
 	// Setup depth buffer
-	realitySetRenderSurface(context, REALITY_SURFACE_ZETA, REALITY_RSX_MEMORY, 
+	internal_reality_SetRenderSurface(context, REALITY_SURFACE_ZETA, REALITY_RSX_MEMORY, 
 					depth_offset, depth_pitch);
 
 	// Choose color0 as the render target and tell the rsx about the surface format.
-	realitySelectRenderTarget(context, REALITY_TARGET_0, 
+	internal_reality_SelectRenderTarget(context, REALITY_TARGET_0, 
 		REALITY_TARGET_FORMAT_COLOR_A8R8G8B8 | 
         zformat |
 		REALITY_TARGET_FORMAT_TYPE_LINEAR,
@@ -134,15 +134,15 @@ void setupRenderTarget(u32 currentBuffer) {
 
 void setupRenderTarget2(u32 rsx_offset, u32 pitch, u32 width, u32 height, u32 format) {
 	// Set the color0 target to point at the offset of our current surface
-	realitySetRenderSurface(context, REALITY_SURFACE_COLOR1, REALITY_RSX_MEMORY, 
+	internal_reality_SetRenderSurface(context, REALITY_SURFACE_COLOR1, REALITY_RSX_MEMORY, 
 					rsx_offset, pitch);
 
 	// Setup depth buffer
-	realitySetRenderSurface(context, REALITY_SURFACE_ZETA, REALITY_RSX_MEMORY, 
+	internal_reality_SetRenderSurface(context, REALITY_SURFACE_ZETA, REALITY_RSX_MEMORY, 
 					depth_offset, depth_pitch);
 
 	// Choose color0 as the render target and tell the rsx about the surface format.
-	realitySelectRenderTarget(context, REALITY_TARGET_1, 
+	internal_reality_SelectRenderTarget(context, REALITY_TARGET_1, 
 		((format) ? REALITY_TARGET_FORMAT_COLOR_A8R8G8B8 : REALITY_TARGET_FORMAT_COLOR_X1R5G5B5) | 
         zformat | 
 		REALITY_TARGET_FORMAT_TYPE_LINEAR,

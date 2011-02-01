@@ -7,6 +7,10 @@
 #ifndef MATRIX_H
 #define MATRIX_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct {
 
     float data[4][4];
@@ -50,5 +54,8 @@ VECTOR VectorToUnit(VECTOR v);
 
 VECTOR VectorNormalPlane(VECTOR v1, VECTOR v2, VECTOR v3);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif

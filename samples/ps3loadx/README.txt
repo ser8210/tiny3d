@@ -1,5 +1,7 @@
 PS3loadX is my personal evolution of PSL1GHT PS3load sample, using now the Tiny3D library. I hope this version helps to you to work easily ;)
 
+IMPORTANT: if you are using CFW Hermes 3.41 you can install ps3loadx.cfw_hermes_3.41.pkg to load the payload (you can build it with "make pkgh341"
+
 - You can load SELF files using the net.
 
 - You can load applications from USB/ HDD devices

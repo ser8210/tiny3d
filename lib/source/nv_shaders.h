@@ -1,7 +1,14 @@
 #ifndef __NV_SHADERS_H__
 #define __NV_SHADERS_H__
 
-#include <rsx/commands.h>
+//#include <rsx/commands.h>
+typedef struct {
+	uint32_t offset;
+	uint32_t size;
+	uint32_t num_regs;
+	uint32_t data[];
+} realityFragmentProgram_internal; 
+
 
 /*******************************************************************************
  * NV30/NV40/G70 fragment shaders
@@ -9,7 +16,7 @@
 
 // color0 only
 
-static realityFragmentProgram nv30_fp_color = {
+static realityFragmentProgram_internal nv30_fp_color = {
 .num_regs = 2,
 .size = (1*4),
 .data = {
@@ -20,7 +27,7 @@ static realityFragmentProgram nv30_fp_color = {
 
 // texture0 only
 
-static realityFragmentProgram nv30_fp_texture = {
+static realityFragmentProgram_internal nv30_fp_texture = {
 .num_regs = 2,
 .size = (1*4),
 .data = {
@@ -31,7 +38,7 @@ static realityFragmentProgram nv30_fp_texture = {
 
 // color0 and texture0
 
-static realityFragmentProgram nv30_fp_texture_color = {
+static realityFragmentProgram_internal nv30_fp_texture_color = {
 .num_regs = 2,
 .size = (2*4),
 .data = {
@@ -43,7 +50,7 @@ static realityFragmentProgram nv30_fp_texture_color = {
 };
 
 // texture0 + texture1
-static realityFragmentProgram nv30_fp_texture2 = {
+static realityFragmentProgram_internal nv30_fp_texture2 = {
 .num_regs = 3,
 .size = (3*4),
 .data = {
@@ -57,7 +64,7 @@ static realityFragmentProgram nv30_fp_texture2 = {
 };
 
 // texture0 + texture1 alternative
-static realityFragmentProgram nv30_fp_texture2_alt = {
+static realityFragmentProgram_internal nv30_fp_texture2_alt = {
 .num_regs = 3,
 .size = (6*4),
 .data = {
@@ -77,7 +84,7 @@ static realityFragmentProgram nv30_fp_texture2_alt = {
 };
 
 // texture0 + texture1 alternative2
-static realityFragmentProgram nv30_fp_texture2_alt2 = {
+static realityFragmentProgram_internal nv30_fp_texture2_alt2 = {
 .num_regs = 3,
 .size = (5*4),
 .data = {
@@ -95,7 +102,7 @@ static realityFragmentProgram nv30_fp_texture2_alt2 = {
 };
 
 // color0 + texture0 + texture1
-static realityFragmentProgram nv30_fp_texture_color2 = {
+static realityFragmentProgram_internal nv30_fp_texture_color2 = {
 .num_regs = 3,
 .size = (4*4),
 .data = {
@@ -111,7 +118,7 @@ static realityFragmentProgram nv30_fp_texture_color2 = {
 };
 
 // color0 + texture0 + texture1 alternative
-static realityFragmentProgram nv30_fp_texture_color2_alt = {
+static realityFragmentProgram_internal nv30_fp_texture_color2_alt = {
 .num_regs = 3,
 .size = (7*4),
 .data = {
@@ -133,7 +140,7 @@ static realityFragmentProgram nv30_fp_texture_color2_alt = {
 };
 
 // color0 + texture0 + texture1 alternative2
-static realityFragmentProgram nv30_fp_texture_color2_alt2 = {
+static realityFragmentProgram_internal nv30_fp_texture_color2_alt2 = {
 .num_regs = 3,
 .size = (6*4),
 .data = {
@@ -153,7 +160,7 @@ static realityFragmentProgram nv30_fp_texture_color2_alt2 = {
 };
 
 
-static realityFragmentProgram nv30_fp_yuv = {
+static realityFragmentProgram_internal nv30_fp_yuv = {
 .num_regs = 4,
 .size = (17*4),
 .data = {
@@ -177,7 +184,7 @@ static realityFragmentProgram nv30_fp_yuv = {
 }
 };
 
-static realityFragmentProgram nv30_fp_yuv8 = {
+static realityFragmentProgram_internal nv30_fp_yuv8 = {
 .num_regs = 4,
 .size = (23*4),
 .data = {
@@ -207,7 +214,7 @@ static realityFragmentProgram nv30_fp_yuv8 = {
 }
 };
 
-static realityFragmentProgram nv30_fp_yuv_color = {
+static realityFragmentProgram_internal nv30_fp_yuv_color = {
 .num_regs = 3,
 .size = (18*4),
 .data = {
@@ -232,7 +239,7 @@ static realityFragmentProgram nv30_fp_yuv_color = {
 }
 };
 
-static realityFragmentProgram nv30_fp_yuv_color8 = {
+static realityFragmentProgram_internal nv30_fp_yuv_color8 = {
 .num_regs = 3,
 .size = (23*4),
 .data = {

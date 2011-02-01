@@ -5,19 +5,16 @@ endif
 
 include $(PSL1GHT)/Makefile.base
 
-TARGET		:=	$(notdir $(CURDIR))
+TARGET		:=	libfont
 BUILD		:=	build
 SOURCE		:=	source
 INCLUDE		:=	include
 DATA		:=	data
-LIBS		:=	-lfont -ltiny3d -lgcm_sys -lreality -lsysutil -lio -lm
+LIBS		:=	
 
-TITLE		:=	Fonts - Tiny3D
-APPID		:=	FONTS0001
-CONTENTID	:=	UP0001-$(APPID)_00-0000000000000000
+LD			:=	ppu-ld
 
-CFLAGS		+= -g -O2 -Wall --std=gnu99
-CXXFLAGS	+= -g -O2 -Wall
+CFLAGS		:=	-g -O2 -Wall
 
 ifneq ($(BUILD),$(notdir $(CURDIR)))
 
@@ -42,37 +39,30 @@ export OFILES	:=	$(CFILES:.c=.o) \
 export BINFILES	:=	$(BINFILES:.bin=.bin.h)
 export VCGFILES	:=	$(VCGFILES:.vcg=.vcg.h)
 
-export INCLUDES	:=	$(foreach dir,$(INCLUDE),-I$(CURDIR)/$(dir)) \
-					-I$(CURDIR)/$(BUILD)
+export INCLUDES	=	$(foreach dir,$(INCLUDE),-I$(CURDIR)/$(dir)) \
+					-I$(CURDIR)/$(BUILD) -I$(PSL1GHT)/target/include
 
-.PHONY: $(BUILD) clean
+.PHONY: $(BUILD) install clean
 
 $(BUILD):
 	@[ -d $@ ] || mkdir -p $@
 	@make --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
 
+install: $(BUILD)
+	@echo Copying...
+	@cp include/*.h $(PSL1GHT)/target/include
+	@cp *.a $(PSL1GHT)/target/lib
+	@echo Done!
+
 clean:
 	@echo Clean...
-	@rm -rf $(BUILD) $(OUTPUT).elf $(OUTPUT).self $(OUTPUT).a $(OUTPUT).pkg
-
-pkg: $(BUILD)
-	@echo Creating PKG...
-	@mkdir -p $(BUILD)/pkg
-	@mkdir -p $(BUILD)/pkg/USRDIR
-	@cp $(ICON0) $(BUILD)/pkg/
-	@$(FSELF) -n $(BUILD)/$(TARGET).elf $(BUILD)/pkg/USRDIR/EBOOT.BIN
-	@$(SFO) --title "$(TITLE)" --appid "$(APPID)" -f $(SFOXML) $(BUILD)/pkg/PARAM.SFO
-	@$(PKG) --contentid $(CONTENTID) $(BUILD)/pkg/ $(OUTPUT).pkg
-
-run: $(BUILD)
-	@$(PS3LOADAPP) $(OUTPUT).self
+	@rm -rf $(BUILD) $(OUTPUT).elf $(OUTPUT).self $(OUTPUT).a
 
 else
 
 DEPENDS	:= $(OFILES:.o=.d)
 
-$(OUTPUT).self: $(OUTPUT).elf
-$(OUTPUT).elf: $(OFILES)
+$(OUTPUT).a: $(OFILES)
 $(OFILES): $(BINFILES) $(VCGFILES)
 
 -include $(DEPENDS)

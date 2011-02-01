@@ -11,12 +11,14 @@
 
 #include <sysutil/video.h>
 #include <rsx/gcm.h>
-
-#include <rsx/commands.h>
 #include <rsx/nv40.h>
-#include <rsx/reality.h>
 
 #include "matrix.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 
 enum
 {
@@ -43,11 +45,18 @@ typedef enum
 
 } type_polygon;
 
+#define INT_REALITY_CLEAR_BUFFERS_DEPTH				0x00000001
+#define INT_REALITY_CLEAR_BUFFERS_STENCIL				0x00000002
+#define INT_REALITY_CLEAR_BUFFERS_COLOR_R				0x00000010
+#define INT_REALITY_CLEAR_BUFFERS_COLOR_G				0x00000020
+#define INT_REALITY_CLEAR_BUFFERS_COLOR_B				0x00000040
+#define INT_REALITY_CLEAR_BUFFERS_COLOR_A				0x00000080
+
 typedef enum 
 {
-    TINY3D_CLEAR_COLOR      = REALITY_CLEAR_BUFFERS_COLOR_R | REALITY_CLEAR_BUFFERS_COLOR_G 
-                            | REALITY_CLEAR_BUFFERS_COLOR_B | NV30_3D_CLEAR_BUFFERS_COLOR_A,
-    TINY3D_CLEAR_ZBUFFER    = REALITY_CLEAR_BUFFERS_DEPTH,
+    TINY3D_CLEAR_COLOR      = INT_REALITY_CLEAR_BUFFERS_COLOR_R | INT_REALITY_CLEAR_BUFFERS_COLOR_G 
+                            | INT_REALITY_CLEAR_BUFFERS_COLOR_B | NV30_3D_CLEAR_BUFFERS_COLOR_A,
+    TINY3D_CLEAR_ZBUFFER    = INT_REALITY_CLEAR_BUFFERS_DEPTH,
     
     TINY3D_CLEAR_STENCIL    = NV30_3D_CLEAR_BUFFERS_STENCIL,
 
@@ -440,6 +449,10 @@ extern u32 * Video_buffer[2];
 extern int Video_pitch;
 
 extern u8 Video_aspect; // 1-> 4:3 2-> 16:9
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 

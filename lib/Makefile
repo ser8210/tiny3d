@@ -3,7 +3,8 @@ ifeq ($(strip $(PSL1GHT)),)
 $(error "PSL1GHT must be set in the environment.")
 endif
 
-include $(PSL1GHT)/Makefile.base
+#include $(PSL1GHT)/Makefile.base
+include $(PSL1GHT)/host/ppu.mk
 
 TARGET		:=	libtiny3d
 BUILD		:=	build
@@ -44,7 +45,7 @@ export VCGFILES	:=	$(VCGFILES:.vcg=.vcg.h)
 export VSAFILES	:=	$(VSAFILES:.vsa=.vsa.h)
 
 export INCLUDES	=	$(foreach dir,$(INCLUDE),-I$(CURDIR)/$(dir)) \
-					-I$(CURDIR)/$(BUILD) -I$(PSL1GHT)/include
+					-I$(CURDIR)/$(BUILD) -I$(PSL1GHT)/target/include
 
 .PHONY: $(BUILD) install clean shader
 
@@ -59,8 +60,8 @@ shader:
 
 install: $(BUILD)
 	@echo Copying...
-	@cp include/*.h $(PSL1GHT)/include
-	@cp *.a $(PSL1GHT)/lib
+	@cp include/*.h $(PSL1GHT)/target/include
+	@cp *.a $(PSL1GHT)/target/lib
 	@echo Done!
 
 clean:

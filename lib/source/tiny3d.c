@@ -19,6 +19,11 @@
 
 #include "vshader_text_normal.vcg.h"
 
+#include "buffer.h"
+#include "commands.h"
+#include <rsx/reality.h>
+#include "realityVP.h"
+
 static struct {
     int target;
     u32 w, h, p;
@@ -253,38 +258,38 @@ int tiny3d_Init(u32 vertex_buff_size)
     while(fpshader_list[n]) {
 
         // install fragments shaders in rsx memory
-        u32 *frag_mem = rsxMemAlign(256, (((realityFragmentProgram *) fpshader_list[n])->size * 4 + 255) & ~255);
+        u32 *frag_mem = rsxMemAlign(256, (((realityFragmentProgram_internal *) fpshader_list[n])->size * 4 + 255) & ~255);
     
         if(!frag_mem) return TINY3D_OUTMEMORY;
 
-        realityInstallFragmentProgram(context, fpshader_list[n], frag_mem);
+        internal_reality_InstallFragmentProgram(context, fpshader_list[n], frag_mem);
         
         n++;
     }
 
     // shaders datas
     for(n = 0; n < 12; n++) {
-        data_shader[n].off_project  = realityVertexProgramGetConstant((realityVertexProgram*)       vshader_text_normal_bin, "ProjMatrix");
-        data_shader[n].off_modelv   = realityVertexProgramGetConstant((realityVertexProgram*)       vshader_text_normal_bin, "WorldMatrix");
-        data_shader[n].off_position = realityVertexProgramGetInputAttribute((realityVertexProgram*) vshader_text_normal_bin, "inputvertex.vertex");
-        data_shader[n].off_texture  = realityVertexProgramGetInputAttribute((realityVertexProgram*) vshader_text_normal_bin, "inputvertex.texcoord");
-        data_shader[n].off_texture2 = realityVertexProgramGetInputAttribute((realityVertexProgram*) vshader_text_normal_bin, "inputvertex.texcoord2");
-        data_shader[n].off_color    = realityVertexProgramGetInputAttribute((realityVertexProgram*) vshader_text_normal_bin, "inputvertex.color");
-        data_shader[n].off_normal   = realityVertexProgramGetInputAttribute((realityVertexProgram*) vshader_text_normal_bin, "inputvertex.normal");
+        data_shader[n].off_project  = internal_reality_VertexProgramGetConstant((internal_reality_VertexProgram*)       vshader_text_normal_bin, "ProjMatrix");
+        data_shader[n].off_modelv   = internal_reality_VertexProgramGetConstant((internal_reality_VertexProgram*)       vshader_text_normal_bin, "WorldMatrix");
+        data_shader[n].off_position = internal_reality_VertexProgramGetInputAttribute((internal_reality_VertexProgram*) vshader_text_normal_bin, "inputvertex.vertex");
+        data_shader[n].off_texture  = internal_reality_VertexProgramGetInputAttribute((internal_reality_VertexProgram*) vshader_text_normal_bin, "inputvertex.texcoord");
+        data_shader[n].off_texture2 = internal_reality_VertexProgramGetInputAttribute((internal_reality_VertexProgram*) vshader_text_normal_bin, "inputvertex.texcoord2");
+        data_shader[n].off_color    = internal_reality_VertexProgramGetInputAttribute((internal_reality_VertexProgram*) vshader_text_normal_bin, "inputvertex.color");
+        data_shader[n].off_normal   = internal_reality_VertexProgramGetInputAttribute((internal_reality_VertexProgram*) vshader_text_normal_bin, "inputvertex.normal");
         data_shader[n].vp           = (void *) vshader_text_normal_bin;
         data_shader[n].fp_alt[0]    = (void *) NULL;
         data_shader[n].fp_alt[1]    = (void *) NULL;
         data_shader[n].fp_yuv[0]    = (void *) NULL;
         data_shader[n].fp_yuv[1]    = (void *) NULL;
 
-        data_shader[n].off_lightAmbient   = realityVertexProgramGetConstant((realityVertexProgram*) vshader_text_normal_bin, "lightAmbient");
-        data_shader[n].off_lightColor     = realityVertexProgramGetConstant((realityVertexProgram*) vshader_text_normal_bin, "lightColor");
-        data_shader[n].off_lightPosition  = realityVertexProgramGetConstant((realityVertexProgram*) vshader_text_normal_bin, "lightPosition");
-        data_shader[n].off_cameraPosition = realityVertexProgramGetConstant((realityVertexProgram*) vshader_text_normal_bin, "CameraPosition");
-        data_shader[n].off_emissive       = realityVertexProgramGetConstant((realityVertexProgram*) vshader_text_normal_bin, "Memissive");
-        data_shader[n].off_ambient        = realityVertexProgramGetConstant((realityVertexProgram*) vshader_text_normal_bin, "Mambient");
-        data_shader[n].off_diffuse        = realityVertexProgramGetConstant((realityVertexProgram*) vshader_text_normal_bin, "Mdiffuse");
-        data_shader[n].off_specular       = realityVertexProgramGetConstant((realityVertexProgram*) vshader_text_normal_bin, "Mspecular");
+        data_shader[n].off_lightAmbient   = internal_reality_VertexProgramGetConstant((internal_reality_VertexProgram*) vshader_text_normal_bin, "lightAmbient");
+        data_shader[n].off_lightColor     = internal_reality_VertexProgramGetConstant((internal_reality_VertexProgram*) vshader_text_normal_bin, "lightColor");
+        data_shader[n].off_lightPosition  = internal_reality_VertexProgramGetConstant((internal_reality_VertexProgram*) vshader_text_normal_bin, "lightPosition");
+        data_shader[n].off_cameraPosition = internal_reality_VertexProgramGetConstant((internal_reality_VertexProgram*) vshader_text_normal_bin, "CameraPosition");
+        data_shader[n].off_emissive       = internal_reality_VertexProgramGetConstant((internal_reality_VertexProgram*) vshader_text_normal_bin, "Memissive");
+        data_shader[n].off_ambient        = internal_reality_VertexProgramGetConstant((internal_reality_VertexProgram*) vshader_text_normal_bin, "Mambient");
+        data_shader[n].off_diffuse        = internal_reality_VertexProgramGetConstant((internal_reality_VertexProgram*) vshader_text_normal_bin, "Mdiffuse");
+        data_shader[n].off_specular       = internal_reality_VertexProgramGetConstant((internal_reality_VertexProgram*) vshader_text_normal_bin, "Mspecular");
 
         data_shader[n].fixed_color = 0;
     }
@@ -381,47 +386,47 @@ int tiny3d_Init(u32 vertex_buff_size)
 /* CHANGE SHADER CONTEXT / PUT_VERTEX                                                                      */
 /***********************************************************************************************************/
 
-static void realitySetVertexProgramConstant3f(gcmContextData *context, int constant, float values[3])
+static void internal_reality_SetVertexProgramConstant3f(gcmContextData *context, int constant, float values[3])
 {
     float _values[4];
     _values[0] = values[0]; _values[1] = values[1]; _values[2] = values[2]; _values[3] = 0.0f; 
-    realitySetVertexProgramConstant4f(context, constant, _values);
+    internal_reality_SetVertexProgramConstant4f(context, constant, _values);
 }
 
 /*
-static void realitySetVertexProgramConstant1f(gcmContextData *context, int constant, float values)
+static void internal_reality_SetVertexProgramConstant1f(gcmContextData *context, int constant, float values)
 {
     float _values[4];
     _values[0] = values; _values[1] = _values[2] = _values[3] = 0.0f; 
-    realitySetVertexProgramConstant4f(context, constant, _values);
+    internal_reality_SetVertexProgramConstant4f(context, constant, _values);
 }
 */
 
-#include <rsx/buffer.h>
 
-static void realityLoadVertexProgram_good(gcmContextData *context, realityVertexProgram *prog) {
+
+static void internal_reality_LoadVertexProgram_good(gcmContextData *context, internal_reality_VertexProgram *prog) {
 	int inst;
-	unsigned int *ucode = (unsigned int*)realityVertexProgramGetUCode(prog);
-	realityVertexProgramConstant *constants;
+	unsigned int *ucode = (unsigned int*)internal_reality_VertexProgramGetUCode(prog);
+	internal_reality_VertexProgramConstant *constants;
 
-    COMMAND_LENGTH(context, 2);
-	commandBufferPutCmd1(context, NV30_3D_VP_UPLOAD_FROM_ID, 0);
+    INTERNAL_COMMAND_LENGTH(context, 2);
+	internal_commandBufferPutCmd1(context, NV30_3D_VP_UPLOAD_FROM_ID, 0);
 	
     for(inst = 0; inst < prog->NumInsts*4; inst += 4)
     {
     
-        COMMAND_LENGTH(context, 5);
-		commandBufferPutCmd4(context, NV30_3D_VP_UPLOAD_INST(inst & 31), 
+        INTERNAL_COMMAND_LENGTH(context, 5);
+		internal_commandBufferPutCmd4(context, NV30_3D_VP_UPLOAD_INST(inst & 31), 
 					ucode[inst + 0],
 					ucode[inst + 1],
 					ucode[inst + 2],
 					ucode[inst + 3]);
 	}
     
-    COMMAND_LENGTH(context, 2+3);
-    commandBufferPutCmd1(context, NV30_3D_VP_START_FROM_ID, 0);
-    commandBufferPutCmd2(context, NV40_3D_VP_ATTRIB_EN, prog->InputMask, prog->OutputMask);
-	constants = realityVertexProgramGetConstants(prog);
+    INTERNAL_COMMAND_LENGTH(context, 2+3);
+    internal_commandBufferPutCmd1(context, NV30_3D_VP_START_FROM_ID, 0);
+    internal_commandBufferPutCmd2(context, NV40_3D_VP_ATTRIB_EN, prog->InputMask, prog->OutputMask);
+	constants = internal_reality_VertexProgramGetConstants(prog);
 
 	if(constants)
 	{
@@ -430,7 +435,7 @@ static void realityLoadVertexProgram_good(gcmContextData *context, realityVertex
 		for(c = 0; c < prog->NumConstants; c++)
 		{
             if(constants[c].Internal)
-			    realitySetVertexProgramConstant4f(context,constants[c].Index,(float*)constants[c].Values);
+			    internal_reality_SetVertexProgramConstant4f(context,constants[c].Index,(float*)constants[c].Values);
 		}
 	}
     
@@ -444,13 +449,13 @@ static void Update_With_Normal()
     if(data_shader[current_shader].off_normal < 0) return;
 
     if(flag_vertex & VERTEX_SETMAT) {
-        realitySetVertexProgramConstant4fBlock(context, data_shader[current_shader].off_emissive, 4, (float *) &material.emissive[0]);
+        internal_reality_SetVertexProgramConstant4fBlock(context, data_shader[current_shader].off_emissive, 4, (float *) &material.emissive[0]);
         flag_vertex &= ~VERTEX_SETMAT;
     }
 
     if(flag_vertex & VERTEX_SETAMBIENT) {
         light.ambient[3] = 1.0f;
-        realitySetVertexProgramConstant4f(context, data_shader[current_shader].off_lightAmbient, (float *) light.ambient);
+        internal_reality_SetVertexProgramConstant4f(context, data_shader[current_shader].off_lightAmbient, (float *) light.ambient);
         flag_vertex &= ~VERTEX_SETAMBIENT;
     }
 
@@ -458,9 +463,9 @@ static void Update_With_Normal()
         int i;
         for(i = 0; i < 4; i++) {
            
-            realitySetVertexProgramConstant4f(context, data_shader[current_shader].off_lightPosition + i, (float *) &light.pos[i][0]);
+            internal_reality_SetVertexProgramConstant4f(context, data_shader[current_shader].off_lightPosition + i, (float *) &light.pos[i][0]);
             if(light.pos[i][3] == 0) continue;
-            realitySetVertexProgramConstant3f(context, data_shader[current_shader].off_lightColor + i, (float *) &light.color[i][0]);
+            internal_reality_SetVertexProgramConstant3f(context, data_shader[current_shader].off_lightColor + i, (float *) &light.color[i][0]);
             
         }
 
@@ -468,7 +473,7 @@ static void Update_With_Normal()
     }
 
     if(flag_vertex & VERTEX_SETCAMERA) {
-        realitySetVertexProgramConstant3f(context, data_shader[current_shader].off_cameraPosition, (float *) &light.camera[0]);
+        internal_reality_SetVertexProgramConstant3f(context, data_shader[current_shader].off_cameraPosition, (float *) &light.camera[0]);
         flag_vertex &= ~VERTEX_SETCAMERA;
     }
 }
@@ -479,20 +484,20 @@ static void set_shader_context(int old_shader)
     u32 text_off = 16;
    
     if(old_shader == -1)
-        realityLoadVertexProgram_good(context, (realityVertexProgram*) data_shader[current_shader].vp);
+        internal_reality_LoadVertexProgram_good(context, (internal_reality_VertexProgram*) data_shader[current_shader].vp);
 
 
     //Pass the matrix to the shader
     
     if(use_2d)
         {
-        realitySetVertexProgramConstant4fBlock(context, data_shader[current_shader].off_modelv,  4, (float*)(model_view.data));
-        realitySetVertexProgramConstant4fBlock(context, data_shader[current_shader].off_project, 4, (float*)(matrix_ident.data));
+        internal_reality_SetVertexProgramConstant4fBlock(context, data_shader[current_shader].off_modelv,  4, (float*)(model_view.data));
+        internal_reality_SetVertexProgramConstant4fBlock(context, data_shader[current_shader].off_project, 4, (float*)(matrix_ident.data));
         }
      else
         { 
-        realitySetVertexProgramConstant4fBlock(context, data_shader[current_shader].off_modelv,  4, (float*)(model_view.data));
-        realitySetVertexProgramConstant4fBlock(context, data_shader[current_shader].off_project,  4, (float*)(project_mat.data));
+        internal_reality_SetVertexProgramConstant4fBlock(context, data_shader[current_shader].off_modelv,  4, (float*)(model_view.data));
+        internal_reality_SetVertexProgramConstant4fBlock(context, data_shader[current_shader].off_project,  4, (float*)(project_mat.data));
         }
     
     if(data_shader[current_shader].off_normal >= 0) {
@@ -502,7 +507,7 @@ static void set_shader_context(int old_shader)
     } else {
         
         light.ambient[3] = 0.0f;
-        realitySetVertexProgramConstant4f(context, data_shader[current_shader].off_lightAmbient, (float *) light.ambient);
+        internal_reality_SetVertexProgramConstant4f(context, data_shader[current_shader].off_lightAmbient, (float *) light.ambient);
     }
 
     flag_vertex &= ~VERTEX_MASKMATRIX;
@@ -514,13 +519,13 @@ static void set_shader_context(int old_shader)
 
     //stride is the distance (in bytes) from the attribute in a vertex to the same attribute in the next vertex (that is, the size of a single vertex struct)
     //elements is the number of components of this attribute that will be passed to this input parameter in the vertex program (max 4)
-    realityBindVertexBufferAttribute(context, data_shader[current_shader].off_position, offset, data_shader[current_shader].size_vertex, 4, 
+    internal_reality_BindVertexBufferAttribute(context, data_shader[current_shader].off_position, offset, data_shader[current_shader].size_vertex, 4, 
         REALITY_BUFFER_DATATYPE_FLOAT, REALITY_RSX_MEMORY);
 
     if(data_shader[current_shader].off_normal >= 0) {
         text_off += 12;
         realityAddressToOffset(&rsx_vertex[off_start_vertex + 16],&offset);
-            realityBindVertexBufferAttribute(context, data_shader[current_shader].off_normal, offset, data_shader[current_shader].size_vertex, 3,
+            internal_reality_BindVertexBufferAttribute(context, data_shader[current_shader].off_normal, offset, data_shader[current_shader].size_vertex, 3,
                 REALITY_BUFFER_DATATYPE_FLOAT, REALITY_RSX_MEMORY);
     } else
     if(data_shader[current_shader].off_color >= 0) {
@@ -528,11 +533,11 @@ static void set_shader_context(int old_shader)
         realityAddressToOffset(&rsx_vertex[off_start_vertex + 16],&offset);
         if(data_shader[current_shader].fixed_color) {
             text_off += 4;
-            realityBindVertexBufferAttribute(context, data_shader[current_shader].off_color, offset, data_shader[current_shader].size_vertex, 4,
+            internal_reality_BindVertexBufferAttribute(context, data_shader[current_shader].off_color, offset, data_shader[current_shader].size_vertex, 4,
                 REALITY_BUFFER_DATATYPE_BYTE, REALITY_RSX_MEMORY);
         } else {
             text_off += 16;
-            realityBindVertexBufferAttribute(context, data_shader[current_shader].off_color, offset, data_shader[current_shader].size_vertex, 4,
+            internal_reality_BindVertexBufferAttribute(context, data_shader[current_shader].off_color, offset, data_shader[current_shader].size_vertex, 4,
                 REALITY_BUFFER_DATATYPE_FLOAT, REALITY_RSX_MEMORY);
         }
     }
@@ -540,29 +545,29 @@ static void set_shader_context(int old_shader)
     if(data_shader[current_shader].off_texture >= 0) {
         //now the texture coords
         realityAddressToOffset(&rsx_vertex[off_start_vertex + text_off], &offset);
-        realityBindVertexBufferAttribute(context, data_shader[current_shader].off_texture, offset, data_shader[current_shader].size_vertex, 2,
+        internal_reality_BindVertexBufferAttribute(context, data_shader[current_shader].off_texture, offset, data_shader[current_shader].size_vertex, 2,
             REALITY_BUFFER_DATATYPE_FLOAT, REALITY_RSX_MEMORY);
       
         if(data_shader[current_shader].off_texture2 >= 0) {
             //now the texture coords2
             realityAddressToOffset(&rsx_vertex[off_start_vertex + text_off + 8], &offset);
-            realityBindVertexBufferAttribute(context, data_shader[current_shader].off_texture2, offset, data_shader[current_shader].size_vertex, 2,
+            internal_reality_BindVertexBufferAttribute(context, data_shader[current_shader].off_texture2, offset, data_shader[current_shader].size_vertex, 2,
                 REALITY_BUFFER_DATATYPE_FLOAT, REALITY_RSX_MEMORY);
         }
     }
     
     if(data_shader[current_shader].fp_yuv[0] && enable_yuv)
-        realityLoadFragmentProgram(context, data_shader[current_shader].fp_yuv[enable_yuv - 1]);
+        internal_reality_LoadFragmentProgram(context, data_shader[current_shader].fp_yuv[enable_yuv - 1]);
     else if(data_shader[current_shader].fp_alt[0] == NULL)
-        realityLoadFragmentProgram(context, data_shader[current_shader].fp);
+        internal_reality_LoadFragmentProgram(context, data_shader[current_shader].fp);
     else {
 
         select_fp &= 15;
 
         if(!select_fp)
-            realityLoadFragmentProgram(context, data_shader[current_shader].fp);
+            internal_reality_LoadFragmentProgram(context, data_shader[current_shader].fp);
         else
-            realityLoadFragmentProgram(context, data_shader[current_shader].fp_alt[select_fp-1]);
+            internal_reality_LoadFragmentProgram(context, data_shader[current_shader].fp_alt[select_fp-1]);
     }
 }
 
@@ -860,16 +865,16 @@ int tiny3d_End()
             current_shader = temp_shader;
             set_shader_context(old_shader);
         } else if(data_shader[current_shader].fp_yuv[0] && enable_yuv)
-            realityLoadFragmentProgram(context, data_shader[current_shader].fp_yuv[enable_yuv - 1]);
+            internal_reality_LoadFragmentProgram(context, data_shader[current_shader].fp_yuv[enable_yuv - 1]);
         
         else if(data_shader[current_shader].fp_alt[0] != NULL && (select_fp & 128)!=0){    
              
             select_fp &= 15; // disable Pixel Shader Update
 
             if(!select_fp)
-                realityLoadFragmentProgram(context, data_shader[current_shader].fp);
+                internal_reality_LoadFragmentProgram(context, data_shader[current_shader].fp);
             else
-                realityLoadFragmentProgram(context, data_shader[current_shader].fp_alt[select_fp-1]);
+                internal_reality_LoadFragmentProgram(context, data_shader[current_shader].fp_alt[select_fp-1]);
         }
  
 
@@ -877,23 +882,23 @@ int tiny3d_End()
     
         if(flag_vertex & VERTEX_SETMATRIX) { // update matrix
 
-            realitySetVertexProgramConstant4fBlock(context, data_shader[current_shader].off_modelv,  4, (float*)(model_view.data));
+            internal_reality_SetVertexProgramConstant4fBlock(context, data_shader[current_shader].off_modelv,  4, (float*)(model_view.data));
             flag_vertex &= ~VERTEX_SETMATRIX;
         }
 
         if(flag_vertex & VERTEX_SETPROJ) { // update matrix
         
              if(!use_2d)
-                realitySetVertexProgramConstant4fBlock(context, data_shader[current_shader].off_project,  4, (float*)(project_mat.data));
+                internal_reality_SetVertexProgramConstant4fBlock(context, data_shader[current_shader].off_project,  4, (float*)(project_mat.data));
              else
-                realitySetVertexProgramConstant4fBlock(context, data_shader[current_shader].off_project, 4, (float*)(matrix_ident.data));
+                internal_reality_SetVertexProgramConstant4fBlock(context, data_shader[current_shader].off_project, 4, (float*)(matrix_ident.data));
 
             flag_vertex &= ~VERTEX_SETPROJ;
         }
 
         Update_With_Normal();
 
-        realityDrawVertexBuffer(context, polygon, off_head_vertex, n_vertex);
+        internal_reality_DrawVertexBuffer(context, polygon, off_head_vertex, n_vertex);
 
         off_head_vertex += n_vertex;
 
@@ -999,8 +1004,8 @@ void tiny3d_Project2D()
 
     if(render_target.target) {
         
-        realityViewportTranslate(context, 0.0, 0.0, 0.0, 0.0);
-        realityViewportScale(context, ((float) render_target.w)/848.0 ,  (float) (render_target.h)/512.0f, Z_SCALE, 1.0);
+        internal_reality_ViewportTranslate(context, 0.0, 0.0, 0.0, 0.0);
+        internal_reality_ViewportScale(context, ((float) render_target.w)/848.0 ,  (float) (render_target.h)/512.0f, Z_SCALE, 1.0);
 
         return;
     }
@@ -1010,24 +1015,24 @@ void tiny3d_Project2D()
     // 480P / 576P
     if(Video_Resolution.width < 1280) {
 
-        realityViewportTranslate(context, 38.0 , 16.0, 0.0, 0.0);
+        internal_reality_ViewportTranslate(context, 38.0 , 16.0, 0.0, 0.0);
 
-        realityViewportScale(context, (float) (Video_Resolution.width - 72) / 848.0, 
+        internal_reality_ViewportScale(context, (float) (Video_Resolution.width - 72) / 848.0, 
             (Video_Resolution.height == 480) ? (512.0) / 576.0 : 548.0 / 512.0, Z_SCALE, 1.0);
     
     } else if(Video_Resolution.width == 1280) {
     // 720P
         
-        realityViewportTranslate(context, 54.0, 24.0, 0.0, 0.0);
+        internal_reality_ViewportTranslate(context, 54.0, 24.0, 0.0, 0.0);
 
-        realityViewportScale(context, 848.0 / 611.0 ,  674.0 / 512.0, Z_SCALE, 1.0);
+        internal_reality_ViewportScale(context, 848.0 / 611.0 ,  674.0 / 512.0, Z_SCALE, 1.0);
     
     } else {
     // 1080i
         
-        realityViewportTranslate(context, 63.0, 40.0, 0.0, 0.0);
+        internal_reality_ViewportTranslate(context, 63.0, 40.0, 0.0, 0.0);
 
-        realityViewportScale(context, 848.0 / 400.0 ,  952.0 / 512.0, Z_SCALE, 1.0);
+        internal_reality_ViewportScale(context, 848.0 / 400.0 ,  952.0 / 512.0, Z_SCALE, 1.0);
     
     }
 }
@@ -1040,14 +1045,14 @@ void tiny3d_Project3D()
 
     if(render_target.target) {
         
-        realityViewportTranslate(context, ((float) render_target.w)/2.0f, (float) (render_target.h)/2.0f, 0.0, 0.0);
-        realityViewportScale(context, ((float) render_target.w)/ 1920.0f ,  (float) (render_target.h)/ 1080.0f, Z_SCALE, 1.0);
+        internal_reality_ViewportTranslate(context, ((float) render_target.w)/2.0f, (float) (render_target.h)/2.0f, 0.0, 0.0);
+        internal_reality_ViewportScale(context, ((float) render_target.w)/ 1920.0f ,  (float) (render_target.h)/ 1080.0f, Z_SCALE, 1.0);
 
         return;
     }
 
-    realityViewportTranslate(context, (float) Video_Resolution.width / 2.0f, (float) Video_Resolution.height / 2.0, 0.0, 0.0);
-    realityViewportScale(context, (float) Video_Resolution.width / 1920.0f, (float) Video_Resolution.height / 1080.0f , Z_SCALE, 1.0);
+    internal_reality_ViewportTranslate(context, (float) Video_Resolution.width / 2.0f, (float) Video_Resolution.height / 2.0, 0.0, 0.0);
+    internal_reality_ViewportScale(context, (float) Video_Resolution.width / 1920.0f, (float) Video_Resolution.height / 1080.0f , Z_SCALE, 1.0);
   
 }
 
@@ -1066,17 +1071,17 @@ void tiny3d_Clear(u32 color, clear_flags flags)
         tiny3d_SetProjectionMatrix(&matrix_ident);
         tiny3d_SetMatrixModelView(&matrix_ident);
         
-        realityZControl(context, 0, 1, 1); // disable viewport culling
+        internal_reality_ZControl(context, 0, 1, 1); // disable viewport culling
  
-        realityDepthTestFunc(context, REALITY_ZFUNC_LESSOREQUAL);
-        realityDepthWriteEnable(context, 1);
-        realityDepthTestEnable(context, 1);
+        internal_reality_DepthTestFunc(context, REALITY_ZFUNC_LESSOREQUAL);
+        internal_reality_DepthWriteEnable(context, 1);
+        internal_reality_DepthTestEnable(context, 1);
 
-        realityAlphaEnable(context, 0);
+        internal_reality_AlphaEnable(context, 0);
 
-        realityBlendEnable(context, 0);
+        internal_reality_BlendEnable(context, 0);
 
-        realityViewport(context, Video_Resolution.width, Video_Resolution.height);
+        internal_reality_Viewport(context, Video_Resolution.width, Video_Resolution.height);
         
         
       
@@ -1085,7 +1090,7 @@ void tiny3d_Clear(u32 color, clear_flags flags)
         for(n = 0; n < 8; n++)
             {
             
-            realityViewportClip(context, n, Video_Resolution.width, Video_Resolution.height);
+            internal_reality_ViewportClip(context, n, Video_Resolution.width, Video_Resolution.height);
             }
 
         setupRenderTarget(Video_currentBuffer);
@@ -1115,10 +1120,10 @@ void tiny3d_Clear(u32 color, clear_flags flags)
         tiny3d_VertexPos(848/2 , 511, 65535);
         tiny3d_End();
 
-        realityViewport(context, Video_Resolution.width*15/16, Video_Resolution.height);
+        internal_reality_Viewport(context, Video_Resolution.width*15/16, Video_Resolution.height);
         int n;
         for(n = 0; n < 8; n++)
-            realityViewportClip(context, n, Video_Resolution.width*15/16, Video_Resolution.height);
+            internal_reality_ViewportClip(context, n, Video_Resolution.width*15/16, Video_Resolution.height);
         realityClearBuffers(context, flags);
     }
 }
@@ -1141,22 +1146,22 @@ void tiny3d_ClearSurface(u32 color, clear_flags flags, u32 rsx_offset, u32 width
         tiny3d_SetProjectionMatrix(&matrix_ident);
         tiny3d_SetMatrixModelView(&matrix_ident);
         
-        realityZControl(context, 0, 1, 1); // disable viewport culling
+        internal_reality_ZControl(context, 0, 1, 1); // disable viewport culling
  
-        realityDepthTestFunc(context, REALITY_ZFUNC_LESSOREQUAL);
-        realityDepthWriteEnable(context, 1);
-        realityDepthTestEnable(context, 1);
+        internal_reality_DepthTestFunc(context, REALITY_ZFUNC_LESSOREQUAL);
+        internal_reality_DepthWriteEnable(context, 1);
+        internal_reality_DepthTestEnable(context, 1);
 
-        realityAlphaEnable(context, 0);
+        internal_reality_AlphaEnable(context, 0);
 
-        realityBlendEnable(context, 0);
+        internal_reality_BlendEnable(context, 0);
 
-        realityViewport(context, width, height);
+        internal_reality_Viewport(context, width, height);
         
         int n;
 
         for(n = 0; n < 8; n++)
-            realityViewportClip(context, n, width, height);
+            internal_reality_ViewportClip(context, n, width, height);
 
         setupRenderTarget2(rsx_offset, stride, width, height, format);
 
@@ -1178,18 +1183,18 @@ void tiny3d_ClearSurface(u32 color, clear_flags flags, u32 rsx_offset, u32 width
 
 void tiny3d_AlphaTest (int enable, u8 ref, alpha_func func)
 {
-    realityAlphaFunc(context, func);
+    internal_reality_AlphaFunc(context, func);
 
-    realityAlphaRef(context, (u32) ref);
+    internal_reality_AlphaRef(context, (u32) ref);
 
-    realityAlphaEnable(context, enable!=0);
+    internal_reality_AlphaEnable(context, enable!=0);
 }
 
 void tiny3d_BlendFunc (int enable, blend_src_func src_fun, blend_dst_func dst_func, blend_func func)
 {
-    realityBlendFunc(context, src_fun, dst_func);
-    realityBlendEquation(context, func);
-    realityBlendEnable(context, enable!=0);
+    internal_reality_BlendFunc(context, src_fun, dst_func);
+    internal_reality_BlendEquation(context, func);
+    internal_reality_BlendEnable(context, enable!=0);
 }
 
 /***********************************************************************************************************/
@@ -1214,7 +1219,7 @@ void tiny3d_SetTexture(u32 unit, u32 offset, u32 width, u32 height, u32 stride, 
 
 void tiny3d_SetTextureWrap(u32 unit, u32 offset, u32 width, u32 height, u32 stride, text_format fmt, int wrap_u, int wrap_v, int smooth)
 {
-    realityTexture tex;
+    internal_reality_Texture tex;
 
     if(grab_list) {
 
@@ -1281,7 +1286,7 @@ void tiny3d_SetTextureWrap(u32 unit, u32 offset, u32 width, u32 height, u32 stri
     tex.height = height;
     tex.stride = stride;
 
-    realitySetTexture(context, unit, &tex);
+    internal_reality_SetTexture(context, unit, &tex);
 }
 
 void * tiny3d_AllocTexture(u32 size)
