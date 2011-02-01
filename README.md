@@ -7,7 +7,7 @@ NOTE: this repository is updated to the last PSL1GHT libraries and tools on Febr
 Thanks to "marioga" to send to me the new PS3 compilers under MinGW environment
 
 It uses PSL1GHT and install the libraries in PSL1GHT/target/lib, C Header files
-in PSL1GHT/include
+in PSL1GHT/target/include
 
 see the 'docs' folder to know more (i need to update the info to the 2.0 version)
 
