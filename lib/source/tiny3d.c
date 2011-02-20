@@ -996,6 +996,25 @@ void tiny3d_Flip()
 
 }
 
+static int user_viewport = 0;
+static float x_viewport = 0.0f;
+static float y_viewport = 0.0f;
+static float scale2D_x_viewport = 1.0f;
+static float scale2D_y_viewport = 1.0f;
+static float scale3D_x_viewport = 1.0f;
+static float scale3D_y_viewport = 1.0f;
+
+void tiny3d_UserViewport(int onoff, float pos_x, float pos_y, float scale2D_x, float scale2D_y, float scale3D_x, float scale3D_y)
+{
+    user_viewport = onoff;
+    x_viewport = pos_x;
+    y_viewport = pos_y;
+    scale2D_x_viewport = scale2D_x;
+    scale2D_y_viewport = scale2D_y;
+    scale3D_x_viewport = scale3D_x;
+    scale3D_y_viewport = scale3D_y;
+}
+
 void tiny3d_Project2D()
 {
     use_2d = 1;
@@ -1009,8 +1028,14 @@ void tiny3d_Project2D()
 
         return;
     }
-
-      
+    
+    if(user_viewport) {
+        
+        internal_reality_ViewportTranslate(context, x_viewport, y_viewport, 0.0, 0.0);
+        internal_reality_ViewportScale(context, scale2D_x_viewport,  scale2D_y_viewport, Z_SCALE, 1.0); 
+        
+        return;
+    }
 
     // 480P / 576P
     if(Video_Resolution.width < 1280) {
@@ -1052,7 +1077,15 @@ void tiny3d_Project3D()
     }
 
     internal_reality_ViewportTranslate(context, (float) Video_Resolution.width / 2.0f, (float) Video_Resolution.height / 2.0, 0.0, 0.0);
-    internal_reality_ViewportScale(context, (float) Video_Resolution.width / 1920.0f, (float) Video_Resolution.height / 1080.0f , Z_SCALE, 1.0);
+    
+    if(user_viewport) {
+        
+        internal_reality_ViewportScale(context, scale3D_x_viewport,  scale3D_y_viewport, Z_SCALE, 1.0); 
+        
+    } else {
+
+        internal_reality_ViewportScale(context, (float) Video_Resolution.width / 1920.0f, (float) Video_Resolution.height / 1080.0f , Z_SCALE, 1.0);
+    }
   
 }
 

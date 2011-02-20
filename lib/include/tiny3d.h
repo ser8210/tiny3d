@@ -212,6 +212,29 @@ void tiny3d_ClearSurface(u32 color, clear_flags flags, u32 rsx_offset, u32 width
 /* CHANGE TO 2D/3D                                                                                                                             */
 /*---------------------------------------------------------------------------------------------------------------------------------------------*/
 
+
+/* tiny3d_UserViewPort: change to user ViewPort.
+
+This function allow to the user to change the viewport X/Y scale for 2D/3D modes and 2D position. You must call before tiny3d_Clear(),
+tiny3d_Project2D(), tiny3d_Project3D() but it is not necessary to call one time per frame (one time can be sufficient).
+
+You can use Video_Resolution.width and Video_Resolution.height to scale it. For example, in 3D mode by default is used 
+((float) Video_Resolution.width) / 1920.0f and ((float) Video_Resolution.height) / 1080.0f for the scale.
+For 2D mode it can be ((float) Video_Resolution.width) / 848.0f and ((float) Video_Resolution.height) / 512.0f and pos_x = pos_y = 0.0f
+to support virtual 8x48x512 2D screen
+
+if you HDTV support complete screen (some HDTV loses part of visible frame buffer area), you can use this method for the video output, but some 
+HDTV (me HDTV) can be configured for "video" or "PC" the DVI (HDMI) port. By default, Tiny3D is adjusted for my  HDTV "video" mode, so if you can
+see a black border in some samples, you can use tiny3d_UserViewPort() to adjust correctly it 
+
+The onoff param is provide to switch to the internal (with 0) or user (not 0) viewports.
+
+See userviewport sample.
+
+*/
+
+void tiny3d_UserViewport(int onoff, float pos_x, float pos_y, float scale2D_x, float scale2D_y, float scale3D_x, float scale3D_y);
+
 void tiny3d_Project2D();
 
 void tiny3d_Project3D();
